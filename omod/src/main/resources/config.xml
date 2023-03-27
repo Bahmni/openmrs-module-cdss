@@ -3,16 +3,16 @@
 
 <module configVersion="1.6">
 
-	<id>fhir-cdss-int</id>
-	<name>FHIR CDSS Module</name>
-	<version>1.0.0-SNAPSHOT</version>
+	<id>${project.parent.artifactId}</id>
+	<name>${project.parent.name}</name>
+	<version>${project.parent.version}</version>
 	<package>org.bahmni.module.fhircdss</package>
 	<author>Bahmni</author>
 	<description>OpenMRS Module to integrate Fhir CDSS with Bahmni</description>
 
 	<activator>org.bahmni.module.fhircdss.CdssActivator</activator>
 
-	<require_version>1.11.6</require_version>
+	<require_version>${openmrsPlatformVersion}</require_version>
 
 	<require_modules>
 		<require_module>org.openmrs.module.webservices.rest</require_module>

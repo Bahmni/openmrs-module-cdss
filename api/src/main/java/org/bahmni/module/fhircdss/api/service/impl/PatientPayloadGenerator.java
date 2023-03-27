@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PatientPayloadGenerator implements PayloadGenerator {
 
-    FhirPatientService fhirPatientService;
+    private FhirPatientService fhirPatientService;
 
     @Autowired
     public PatientPayloadGenerator(FhirPatientService fhirPatientService) {

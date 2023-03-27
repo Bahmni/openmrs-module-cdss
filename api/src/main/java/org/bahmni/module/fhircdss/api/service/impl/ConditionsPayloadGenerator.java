@@ -39,15 +39,17 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
 
     private static final String BAHMNI_DIAGNOSIS_STATUS = "Bahmni Diagnosis Status";
 
-    PatientService patientService;
+    public static final String STATUS_ACTIVE = "Active";
 
-    ObsService obsService;
+    private PatientService patientService;
 
-    ConceptService conceptService;
+    private ObsService obsService;
 
-    ConceptTranslator conceptTranslator;
+    private ConceptService conceptService;
 
-    FhirConditionService fhirConditionService;
+    private ConceptTranslator conceptTranslator;
+
+    private FhirConditionService fhirConditionService;
 
     @Autowired
     public ConditionsPayloadGenerator(PatientService patientService, ObsService obsService, ConceptService conceptService, ConceptTranslator conceptTranslator, FhirConditionService fhirConditionService) {
@@ -77,9 +79,9 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
 
         List<Obs> visitDiagnosesObs = obsService.getObservationsByPersonAndConcept(openmrsPatient.getPerson(), visitDiagnosesConcept);
 
-        for (Obs obsGroup : visitDiagnosesObs) {
-            Obs codedDiagnosisObs = getObsFor(obsGroup, CODED_DIAGNOSIS);
-            Obs codedDiagnosisStatusObs = getObsFor(obsGroup, BAHMNI_DIAGNOSIS_STATUS);;
+        for (Obs visitDiagnosesObsGroup : visitDiagnosesObs) {
+            Obs codedDiagnosisObs = getObsFor(visitDiagnosesObsGroup, CODED_DIAGNOSIS);
+            Obs codedDiagnosisStatusObs = getObsFor(visitDiagnosesObsGroup, BAHMNI_DIAGNOSIS_STATUS);;
 
             if (codedDiagnosisObs != null && codedDiagnosisStatusObs == null) {
                 Condition condition = new Condition();
@@ -108,7 +110,7 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
 
         for (int i = 0; i < iBundleProvider.getAllResources().size(); i++) {
             Condition fhirCondition = parser.parseResource(Condition.class, parser.encodeResourceToString(iBundleProvider.getAllResources().get(i)));
-            Optional<Coding> clinicalStatusOptional = fhirCondition.getClinicalStatus().getCoding().stream().filter(coding -> "Active".equalsIgnoreCase(coding.getDisplay())).findFirst();
+            Optional<Coding> clinicalStatusOptional = fhirCondition.getClinicalStatus().getCoding().stream().filter(coding -> STATUS_ACTIVE.equalsIgnoreCase(coding.getDisplay())).findFirst();
             if (clinicalStatusOptional.isPresent()) {
                 addEntryToConditionsBundle(conditionsBundle, fhirCondition);
             }
@@ -133,8 +135,8 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
         conditionsBundle.addEntry(bundleEntryComponent);
     }
 
-    private Obs getObsFor(Obs obsGroup, String conceptName) {
-        Set<Obs> groupMembers = obsGroup.getGroupMembers();
+    private Obs getObsFor(Obs visitDiagnosesObsGroup, String conceptName) {
+        Set<Obs> groupMembers = visitDiagnosesObsGroup.getGroupMembers();
         for (Obs obs : groupMembers) {
             if (obs.getConcept().getName().getName().equals(conceptName)) {
                 return obs;

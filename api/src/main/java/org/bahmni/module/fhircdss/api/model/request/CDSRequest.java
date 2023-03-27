@@ -1,11 +1,9 @@
 package org.bahmni.module.fhircdss.api.model.request;
 
-import java.io.Serializable;
-
 public class CDSRequest {
 
-    String hook;
-    Prefetch prefetch;
+    private String hook;
+    private Prefetch prefetch;
 
     public String getHook() {
         return hook;

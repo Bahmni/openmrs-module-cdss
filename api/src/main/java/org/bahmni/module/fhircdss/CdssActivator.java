@@ -15,7 +15,7 @@ public class CdssActivator extends BaseModuleActivator {
 
     @Override
     public void stopped() {
-        log.info("Stopped  Bahmni FHIR CDSS Integration module");
+        log.info("Stopped Bahmni FHIR CDSS Integration module");
     }
 
 }

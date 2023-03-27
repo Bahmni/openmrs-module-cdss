@@ -32,13 +32,13 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
 
     private static final String DRUG_ORDER = "Drug order";
 
-    PatientService patientService;
+    private PatientService patientService;
 
-    OrderService orderService;
+    private OrderService orderService;
 
-    FhirConceptSourceService fhirConceptSourceService;
+    private FhirConceptSourceService fhirConceptSourceService;
 
-    FhirMedicationRequestService fhirMedicationRequestService;
+    private FhirMedicationRequestService fhirMedicationRequestService;
 
     @Autowired
     public MedicationPayloadGenerator(PatientService patientService, OrderService orderService, FhirConceptSourceService fhirConceptSourceService, FhirMedicationRequestService fhirMedicationRequestService) {

@@ -28,7 +28,7 @@ import java.util.Optional;
 public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
 
     @Autowired
-    BundleRequestValidator bundleRequestValidator;
+    private BundleRequestValidator bundleRequestValidator;
 
     @Autowired
     private List<PayloadGenerator> payloadGenerators;

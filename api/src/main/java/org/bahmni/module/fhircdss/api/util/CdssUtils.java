@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class CdssUtils {
 
-    static IParser parser = null;
+    private static IParser parser = null;
 
     public static String getPatientUuidFromMedicationRequestEntry(Bundle bundle) {
         List<Bundle.BundleEntryComponent> medicationEntries = bundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());

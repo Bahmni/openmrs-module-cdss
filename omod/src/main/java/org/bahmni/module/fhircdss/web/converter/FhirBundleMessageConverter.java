@@ -25,7 +25,6 @@ public class FhirBundleMessageConverter extends AbstractHttpMessageConverter<Bun
     private static final String TYPE = "application";
     private static final String SUBTYPE_1 = "json";
 
-
     public FhirBundleMessageConverter() {
         super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)));
     }

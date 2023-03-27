@@ -6,11 +6,11 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Patient;
 
 public class Prefetch {
-    Patient patient;
+    private Patient patient;
 
-    Bundle conditions;
+    private Bundle conditions;
 
-    Bundle draftMedicationRequests;
+    private Bundle draftMedicationRequests;
 
     public Patient getPatient() {
         return patient;

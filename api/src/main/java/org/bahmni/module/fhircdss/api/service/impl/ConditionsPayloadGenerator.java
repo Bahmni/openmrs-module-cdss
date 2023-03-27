@@ -18,7 +18,6 @@ import org.hl7.fhir.r4.model.ResourceType;
 import org.openmrs.Concept;
 import org.openmrs.Obs;
 import org.openmrs.Patient;
-import org.openmrs.Person;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.ObsService;
 import org.openmrs.api.PatientService;
@@ -35,45 +34,61 @@ import java.util.stream.Collectors;
 @Component
 public class ConditionsPayloadGenerator implements PayloadGenerator {
 
+    private static final String VISIT_DIAGNOSES = "Visit Diagnoses";
 
-    @Autowired
+    private static final String CODED_DIAGNOSIS = "Coded Diagnosis";
+
+    private static final String BAHMNI_DIAGNOSIS_STATUS = "Bahmni Diagnosis Status";
+
     PatientService patientService;
 
-    @Autowired
     ObsService obsService;
 
-    @Autowired
     ConceptService conceptService;
 
-    @Autowired
     ConceptTranslator conceptTranslator;
 
-    @Autowired
     FhirConditionService fhirConditionService;
 
+    @Autowired
+    public ConditionsPayloadGenerator(PatientService patientService, ObsService obsService, ConceptService conceptService, ConceptTranslator conceptTranslator, FhirConditionService fhirConditionService) {
+        this.patientService = patientService;
+        this.obsService = obsService;
+        this.conceptService = conceptService;
+        this.conceptTranslator = conceptTranslator;
+        this.fhirConditionService = fhirConditionService;
+    }
+
     @Override
-    public void generate(Bundle bundle, CDSRequest cdsRequest) {
+    public void generate(Bundle requestBundle, CDSRequest cdsRequest) {
         Bundle conditionsBundle = new Bundle();
-        IParser parser = FhirContext.forR4().newJsonParser();
-        parser.setPrettyPrint(true);
 
-        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(bundle);
+        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(requestBundle);
+
+        addExistingDiagnosesToBundle(conditionsBundle, patientUuid);
+        addExistingActiveConditionsToBundle(conditionsBundle, patientUuid);
+
+        addConditionsFromRequest(requestBundle, conditionsBundle);
+        cdsRequest.getPrefetch().setConditions(conditionsBundle);
+    }
+
+    private void addExistingDiagnosesToBundle(Bundle conditionsBundle, String patientUuid) {
         Patient openmrsPatient = patientService.getPatientByUuid(patientUuid);
-        Person person = openmrsPatient.getPerson();
-        Concept conceptByName = conceptService.getConceptByName("Visit Diagnoses");
+        Concept visitDiagnosesConcept = conceptService.getConceptByName(VISIT_DIAGNOSES);
 
-        List<Obs> visitDiagnosesObs = obsService.getObservationsByPersonAndConcept(person, conceptByName);
+        List<Obs> visitDiagnosesObs = obsService.getObservationsByPersonAndConcept(openmrsPatient.getPerson(), visitDiagnosesConcept);
 
-        for (int i = 0; i < visitDiagnosesObs.size(); i++) {
-            Obs obsGroup = visitDiagnosesObs.get(i);
+        for (Obs obsGroup : visitDiagnosesObs) {
             Set<Obs> groupMembers = obsGroup.getGroupMembers();
             Obs codedDiagnosisObs = null;
             Obs codedDiagnosisStatusObs = null;
             for (Obs obs : groupMembers) {
-                if (obs.getConcept().getName().getName().equals("Coded Diagnosis")) {
+                if (obs.getConcept().getName().getName().equals(CODED_DIAGNOSIS)) {
                     codedDiagnosisObs = obs;
-                } else if (obs.getConcept().getName().getName().equals("Bahmni Diagnosis Status")) {
-                    codedDiagnosisStatusObs = obs;
+                } else {
+                    if (obs.getConcept().getName().getName().equals(BAHMNI_DIAGNOSIS_STATUS)) {
+                        codedDiagnosisStatusObs = obs;
+                    }
                 }
             }
 
@@ -86,15 +101,18 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
                 codeableConcept.setCoding(codingList);
                 condition.setCode(codeableConcept);
                 condition.setSubject(reference);
-                Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
-                bundleEntryComponent.setResource(condition);
-                conditionsBundle.addEntry(bundleEntryComponent);
+                addEntryToConditionsBundle(conditionsBundle, condition);
             }
         }
+    }
+
+    private void addExistingActiveConditionsToBundle(Bundle conditionsBundle, String patientUuid) {
+        IParser parser = FhirContext.forR4().newJsonParser();
+        parser.setPrettyPrint(true);
 
         ReferenceAndListParam referenceAndListParam = new ReferenceAndListParam();
         ReferenceParam referenceParam = new ReferenceParam();
-        referenceParam.setValue(openmrsPatient.getUuid());
+        referenceParam.setValue(patientUuid);
         referenceAndListParam.addValue(new ReferenceOrListParam().add(referenceParam));
 
         IBundleProvider iBundleProvider = fhirConditionService.searchConditions(referenceAndListParam, null,
@@ -106,23 +124,27 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
             Condition fhirCondition = parser.parseResource(Condition.class, parser.encodeResourceToString(iBundleProvider.getAllResources().get(i)));
             Optional<Coding> clinicalStatusOptional = fhirCondition.getClinicalStatus().getCoding().stream().filter(coding -> "Active".equals(coding.getDisplay())).findFirst();
             if (clinicalStatusOptional.isPresent()) {
-                Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
-                bundleEntryComponent.setResource(fhirCondition);
-                conditionsBundle.addEntry(bundleEntryComponent);
+                addEntryToConditionsBundle(conditionsBundle, fhirCondition);
             }
         }
+    }
 
-        List<Bundle.BundleEntryComponent> conditionEntries = bundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+    private void addConditionsFromRequest(Bundle requestBundle, Bundle conditionsBundle) {
+        List<Bundle.BundleEntryComponent> conditionEntries = requestBundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
 
         for (Bundle.BundleEntryComponent conditionEntry : conditionEntries) {
             Condition conditionResource = (Condition) conditionEntry.getResource();
             Optional<Coding> clinicalStatusOptional = conditionResource.getClinicalStatus().getCoding().stream().filter(coding -> "Active".equals(coding.getDisplay())).findFirst();
             if (clinicalStatusOptional.isPresent()) {
-                Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
-                bundleEntryComponent.setResource(conditionEntry.getResource());
-                conditionsBundle.addEntry(bundleEntryComponent);
+                addEntryToConditionsBundle(conditionsBundle, conditionResource);
             }
         }
-        cdsRequest.getPrefetch().setConditions(conditionsBundle);
     }
+
+    private void addEntryToConditionsBundle(Bundle conditionsBundle, Condition conditionEntry) {
+        Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
+        bundleEntryComponent.setResource(conditionEntry);
+        conditionsBundle.addEntry(bundleEntryComponent);
+    }
+
 }

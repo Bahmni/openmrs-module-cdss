@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 @Component
 public class MedicationPayloadGenerator implements PayloadGenerator {
 
+    private static final String DRUG_ORDER = "Drug order";
+
     PatientService patientService;
 
     OrderService orderService;
@@ -47,46 +49,62 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
     }
 
     @Override
-    public void generate(Bundle bundle, CDSRequest cdsRequest) {
-        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(bundle);
-        Patient openmrsPatient = patientService.getPatientByUuid(patientUuid);
+    public void generate(Bundle requestBundle, CDSRequest cdsRequest) {
+        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(requestBundle);
+        List<Order> activeOrders = getActiveOrders(patientUuid);
+        Bundle medicationBundle = getMedicationBundleForActiveOrders(activeOrders);
 
-        CareSetting careSetting = orderService.getCareSettingByName(CareSetting.CareSettingType.OUTPATIENT.toString());
-        OrderType drugOrderType = orderService.getOrderTypeByName("Drug order");
-        List<Order> activeOrders = orderService.getActiveOrders(openmrsPatient, drugOrderType, careSetting, new Date());
+        addMedicationsFromRequest(requestBundle, medicationBundle);
 
-        Bundle medicationBundle = new Bundle();
-
-        for (int i = 0; i < activeOrders.size(); i++) {
-            MedicationRequest medicationRequest = fhirMedicationRequestService.get(activeOrders.get(i).getUuid());
-
-            CodeableConcept codeableConcept = new CodeableConcept();
-            Drug drug = ((DrugOrder) activeOrders.get(i)).getDrug();
-            Set<DrugReferenceMap> drugReferenceMaps = drug.getDrugReferenceMaps();
-            if (drugReferenceMaps.size() > 0) {
-                drugReferenceMaps.stream().forEach(drugReferenceMap -> {
-                    Coding coding = new Coding();
-                    coding.setCode(drugReferenceMap.getConceptReferenceTerm().getCode());
-                    coding.setDisplay(drug.getDisplayName());
-                    coding.setSystem(fhirConceptSourceService.getUrlForConceptSource(drugReferenceMap.getConceptReferenceTerm().getConceptSource()));
-                    codeableConcept.addCoding(coding);
-                });
-                codeableConcept.setText(drug.getDisplayName());
-                medicationRequest.setMedication(codeableConcept);
-            }
-
-            Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
-            bundleEntryComponent.setResource(medicationRequest);
-            medicationBundle.addEntry(bundleEntryComponent);
-        }
-
-        List<Bundle.BundleEntryComponent> medicationEntries = bundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
-
-        for (Bundle.BundleEntryComponent medicationEntry : medicationEntries) {
-            Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
-            bundleEntryComponent.setResource(medicationEntry.getResource());
-            medicationBundle.addEntry(bundleEntryComponent);
-        }
         cdsRequest.getPrefetch().setDraftMedicationRequests(medicationBundle);
+    }
+
+    private List<Order> getActiveOrders(String patientUuid) {
+        Patient openmrsPatient = patientService.getPatientByUuid(patientUuid);
+        CareSetting careSetting = orderService.getCareSettingByName(CareSetting.CareSettingType.OUTPATIENT.toString());
+        OrderType drugOrderType = orderService.getOrderTypeByName(DRUG_ORDER);
+        List<Order> activeOrders = orderService.getActiveOrders(openmrsPatient, drugOrderType, careSetting, new Date());
+        return activeOrders;
+    }
+
+    private Bundle getMedicationBundleForActiveOrders(List<Order> activeOrders) {
+        Bundle medicationBundle = new Bundle();
+        for (Order order : activeOrders) {
+            MedicationRequest medicationRequest = fhirMedicationRequestService.get(order.getUuid());
+            CodeableConcept codeableConcept = getCodeableConceptForMedicationRequest(order);
+            medicationRequest.setMedication(codeableConcept);
+            addEntryToMedicationBundle(medicationBundle, medicationRequest);
+        }
+        return medicationBundle;
+    }
+
+    private CodeableConcept getCodeableConceptForMedicationRequest(Order order) {
+        CodeableConcept codeableConcept = new CodeableConcept();
+
+        Drug drug = ((DrugOrder) order).getDrug();
+        Set<DrugReferenceMap> drugReferenceMaps = drug.getDrugReferenceMaps();
+        if (drugReferenceMaps.size() > 0) {
+            drugReferenceMaps.stream().forEach(drugReferenceMap -> {
+                Coding coding = new Coding();
+                coding.setCode(drugReferenceMap.getConceptReferenceTerm().getCode());
+                coding.setDisplay(drug.getDisplayName());
+                coding.setSystem(fhirConceptSourceService.getUrlForConceptSource(drugReferenceMap.getConceptReferenceTerm().getConceptSource()));
+                codeableConcept.addCoding(coding);
+            });
+            codeableConcept.setText(drug.getDisplayName());
+        }
+
+        return codeableConcept;
+    }
+
+    private void addMedicationsFromRequest(Bundle requestBundle, Bundle medicationBundle) {
+        List<Bundle.BundleEntryComponent> medicationEntries = requestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        medicationEntries.stream().forEach(medicationEntry -> addEntryToMedicationBundle(medicationBundle, (MedicationRequest) medicationEntry.getResource()));
+    }
+
+    private void addEntryToMedicationBundle(Bundle medicationBundle, MedicationRequest medicationRequest) {
+        Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
+        bundleEntryComponent.setResource(medicationRequest);
+        medicationBundle.addEntry(bundleEntryComponent);
     }
 }

@@ -1,7 +1,7 @@
 package org.bahmni.module.fhircdss.api.model.request;
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import org.bahmni.module.fhircdss.api.util.CdssUtils;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Patient;
 
@@ -38,8 +38,7 @@ public class Prefetch {
 
     @Override
     public String toString() {
-        IParser parser = FhirContext.forR4().newJsonParser();
-        parser.setPrettyPrint(true);
+        IParser parser = CdssUtils.getFhirJsonParser();
 
         return "{" +
                 "\"patient\" : " + parser.encodeResourceToString(patient) +

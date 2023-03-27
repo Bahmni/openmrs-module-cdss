@@ -1,7 +1,7 @@
 package org.bahmni.module.fhircdss.web.converter;
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import org.bahmni.module.fhircdss.api.util.CdssUtils;
 import org.hl7.fhir.r4.model.Bundle;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -25,7 +25,6 @@ public class FhirBundleMessageConverter extends AbstractHttpMessageConverter<Bun
     private static final String TYPE = "application";
     private static final String SUBTYPE_1 = "json";
 
-    private IParser parser =  FhirContext.forR4().newJsonParser();
 
     public FhirBundleMessageConverter() {
         super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)));
@@ -39,13 +38,14 @@ public class FhirBundleMessageConverter extends AbstractHttpMessageConverter<Bun
     @Override
     protected Bundle readInternal(Class<? extends Bundle> clazz, HttpInputMessage inputMessage) throws HttpMessageNotReadableException, IOException {
         String json = convertStreamToString(inputMessage.getBody());
+        IParser parser = CdssUtils.getFhirJsonParser();
         return parser.parseResource(Bundle.class, json);
     }
 
     @Override
     protected void writeInternal(Bundle resource, HttpOutputMessage outputMessage)
             throws HttpMessageNotWritableException, IOException {
-        parser.setPrettyPrint(true);
+        IParser parser = CdssUtils.getFhirJsonParser();
         String json = parser.encodeResourceToString(resource);
         outputMessage.getBody().write(json.getBytes(StandardCharsets.UTF_8));
     }

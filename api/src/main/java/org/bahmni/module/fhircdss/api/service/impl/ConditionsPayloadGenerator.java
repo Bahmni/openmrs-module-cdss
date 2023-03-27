@@ -1,6 +1,5 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
@@ -95,8 +94,7 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
     }
 
     private void addExistingActiveConditionsToBundle(Bundle conditionsBundle, String patientUuid) {
-        IParser parser = FhirContext.forR4().newJsonParser();
-        parser.setPrettyPrint(true);
+        IParser parser = CdssUtils.getFhirJsonParser();
 
         ReferenceAndListParam referenceAndListParam = new ReferenceAndListParam();
         ReferenceParam referenceParam = new ReferenceParam();

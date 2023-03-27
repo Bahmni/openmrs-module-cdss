@@ -57,7 +57,7 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
         IParser parser = FhirContext.forR4().newJsonParser();
         parser.setPrettyPrint(true);
 
-        String patientUuid = CdssUtils.getPatientUuid(bundle);
+        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(bundle);
         Patient openmrsPatient = patientService.getPatientByUuid(patientUuid);
         Person person = openmrsPatient.getPerson();
         Concept conceptByName = conceptService.getConceptByName("Visit Diagnoses");

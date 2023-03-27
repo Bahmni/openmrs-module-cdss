@@ -10,11 +10,10 @@ import java.util.stream.Collectors;
 
 public class CdssUtils {
 
-    public static String getPatientUuid(Bundle bundle) {
+    public static String getPatientUuidFromMedicationRequestEntry(Bundle bundle) {
         List<Bundle.BundleEntryComponent> medicationEntries = bundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         MedicationRequest medicationRequest = (MedicationRequest) medicationEntries.get(0).getResource();
         Reference subject = medicationRequest.getSubject();
-        int index = subject.getReference().indexOf("/") + 1;
-        return subject.getReference().substring(index);
+        return subject.getReferenceElement().getIdPart();
     }
 }

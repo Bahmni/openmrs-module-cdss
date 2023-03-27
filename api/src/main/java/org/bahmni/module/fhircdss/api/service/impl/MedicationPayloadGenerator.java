@@ -48,7 +48,7 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
 
     @Override
     public void generate(Bundle bundle, CDSRequest cdsRequest) {
-        String patientUuid = CdssUtils.getPatientUuid(bundle);
+        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(bundle);
         Patient openmrsPatient = patientService.getPatientByUuid(patientUuid);
 
         CareSetting careSetting = orderService.getCareSettingByName(CareSetting.CareSettingType.OUTPATIENT.toString());

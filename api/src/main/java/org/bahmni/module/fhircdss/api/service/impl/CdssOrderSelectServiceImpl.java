@@ -35,10 +35,11 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
 
     @Override
     public List<CDSCard> checkContraindications(String service, Bundle bundle) {
+        bundleRequestValidator.validate(bundle);
+
         CDSRequest cdsRequest = new CDSRequest();
         Prefetch prefetch = new Prefetch();
         cdsRequest.setPrefetch(prefetch);
-        bundleRequestValidator.validate(bundle);
 
         for (PayloadGenerator payloadGenerator : payloadGenerators) {
             payloadGenerator.generate(bundle, cdsRequest);

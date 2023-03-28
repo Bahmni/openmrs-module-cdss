@@ -21,6 +21,11 @@ public class CDSRequest {
         this.prefetch = prefetch;
     }
 
+    public CDSRequest() {
+        this.hook = "";
+        this.prefetch = new Prefetch();
+    }
+
     @Override
     public String toString() {
 

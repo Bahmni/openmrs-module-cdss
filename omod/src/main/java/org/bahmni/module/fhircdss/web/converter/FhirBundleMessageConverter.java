@@ -15,18 +15,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 public class FhirBundleMessageConverter extends AbstractHttpMessageConverter<Bundle> {
 
-    private static final String CHARSET = "UTF-8";
-    private static final String TYPE = "application";
-    private static final String SUBTYPE_1 = "json";
-
     public FhirBundleMessageConverter() {
-        super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)));
+        super(MediaType.APPLICATION_JSON);
     }
 
     @Override

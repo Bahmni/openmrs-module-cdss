@@ -9,9 +9,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.bahmni.module.fhircdss.api.exception.CdssException;
 import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
 import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
-import org.bahmni.module.fhircdss.api.model.request.Prefetch;
 import org.bahmni.module.fhircdss.api.service.CdssOrderSelectService;
 import org.bahmni.module.fhircdss.api.service.PayloadGenerator;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
@@ -38,8 +38,6 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
         bundleRequestValidator.validate(bundle);
 
         CDSRequest cdsRequest = new CDSRequest();
-        Prefetch prefetch = new Prefetch();
-        cdsRequest.setPrefetch(prefetch);
 
         for (PayloadGenerator payloadGenerator : payloadGenerators) {
             payloadGenerator.generate(bundle, cdsRequest);
@@ -69,10 +67,10 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
                 }
             };
             String responseStr = httpclient.execute(httpPost, responseHandler);
-            return toCdsAlerts(Optional.of(responseStr).orElseThrow(() -> new RuntimeException()));
+            return toCdsAlerts(Optional.of(responseStr).orElseThrow(RuntimeException::new));
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CdssException(e);
         }
     }
 

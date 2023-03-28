@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 
 public class CdssUtils {
 
+    private CdssUtils() {
+    }
+
     private static IParser parser = null;
 
     public static String getPatientUuidFromMedicationRequestEntry(Bundle bundle) {
@@ -22,7 +25,7 @@ public class CdssUtils {
     }
 
     public static IParser getFhirJsonParser() {
-        if (parser != null) {
+        if (parser == null) {
             parser = FhirContext.forR4().newJsonParser();
             parser.setPrettyPrint(true);
         }

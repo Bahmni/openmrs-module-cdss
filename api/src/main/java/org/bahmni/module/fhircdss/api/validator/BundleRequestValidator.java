@@ -2,6 +2,7 @@ package org.bahmni.module.fhircdss.api.validator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bahmni.module.fhircdss.api.exception.CdssException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.MedicationRequest;
 import org.hl7.fhir.r4.model.Reference;
@@ -18,9 +19,9 @@ public class BundleRequestValidator {
 
     public void validate(Bundle bundle) {
         List<Bundle.BundleEntryComponent> medicationEntries = bundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
-        if (medicationEntries.size() < 1) {
+        if (medicationEntries.isEmpty()) {
             log.error("There are no medication orders in the request");
-            throw new RuntimeException("There are no medication orders in the request");
+            throw new CdssException("There are no medication orders in the request");
         }
 
         for (Bundle.BundleEntryComponent medicationEntry : medicationEntries) {
@@ -28,7 +29,7 @@ public class BundleRequestValidator {
             Reference subject = medicationRequest.getSubject();
             if (!ResourceType.Patient.toString().equals(subject.getReferenceElement().getResourceType())) {
                 log.error("Subject missing in medication orders in the bundle");
-                throw new RuntimeException("Subject missing in medication orders in the bundle");
+                throw new CdssException("Subject missing in medication orders in the bundle");
             }
         }
     }

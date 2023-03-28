@@ -81,7 +81,7 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
 
         for (Obs visitDiagnosesObsGroup : visitDiagnosesObs) {
             Obs codedDiagnosisObs = getObsFor(visitDiagnosesObsGroup, CODED_DIAGNOSIS);
-            Obs codedDiagnosisStatusObs = getObsFor(visitDiagnosesObsGroup, BAHMNI_DIAGNOSIS_STATUS);;
+            Obs codedDiagnosisStatusObs = getObsFor(visitDiagnosesObsGroup, BAHMNI_DIAGNOSIS_STATUS);
 
             if (codedDiagnosisObs != null && codedDiagnosisStatusObs == null) {
                 Condition condition = new Condition();
@@ -122,7 +122,7 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
 
         for (Bundle.BundleEntryComponent conditionEntry : conditionEntries) {
             Condition conditionResource = (Condition) conditionEntry.getResource();
-            Optional<Coding> clinicalStatusOptional = conditionResource.getClinicalStatus().getCoding().stream().filter(coding -> "Active".equals(coding.getDisplay())).findFirst();
+            Optional<Coding> clinicalStatusOptional = conditionResource.getClinicalStatus().getCoding().stream().filter(coding -> STATUS_ACTIVE.equals(coding.getDisplay())).findFirst();
             if (clinicalStatusOptional.isPresent()) {
                 addEntryToConditionsBundle(conditionsBundle, conditionResource);
             }

@@ -63,8 +63,7 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
         Patient openmrsPatient = patientService.getPatientByUuid(patientUuid);
         CareSetting careSetting = orderService.getCareSettingByName(CareSetting.CareSettingType.OUTPATIENT.toString());
         OrderType drugOrderType = orderService.getOrderTypeByName(DRUG_ORDER);
-        List<Order> activeOrders = orderService.getActiveOrders(openmrsPatient, drugOrderType, careSetting, new Date());
-        return activeOrders;
+        return orderService.getActiveOrders(openmrsPatient, drugOrderType, careSetting, new Date());
     }
 
     private Bundle getMedicationBundleForActiveOrders(List<Order> activeOrders) {
@@ -83,7 +82,7 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
 
         Drug drug = ((DrugOrder) order).getDrug();
         Set<DrugReferenceMap> drugReferenceMaps = drug.getDrugReferenceMaps();
-        if (drugReferenceMaps.size() > 0) {
+        if (!drugReferenceMaps.isEmpty()) {
             drugReferenceMaps.stream().forEach(drugReferenceMap -> {
                 Coding coding = new Coding();
                 coding.setCode(drugReferenceMap.getConceptReferenceTerm().getCode());

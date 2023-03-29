@@ -20,8 +20,8 @@ public class PatientPayloadGenerator implements PayloadGenerator {
     }
 
     @Override
-    public void generate(Bundle bundle, CDSRequest cdsRequest) {
-        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(bundle);
+    public void generate(Bundle inputBundle, CDSRequest cdsRequest) {
+        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(inputBundle);
         Patient fhirPatient = fhirPatientService.get(patientUuid);
         cdsRequest.getPrefetch().setPatient(fhirPatient);
     }

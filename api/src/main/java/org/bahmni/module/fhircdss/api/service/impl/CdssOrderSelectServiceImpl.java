@@ -12,6 +12,7 @@ import org.apache.http.util.EntityUtils;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
 import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
 import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
+import org.bahmni.module.fhircdss.api.model.request.Prefetch;
 import org.bahmni.module.fhircdss.api.service.CdssOrderSelectService;
 import org.bahmni.module.fhircdss.api.service.PayloadGenerator;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
@@ -37,13 +38,15 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     public List<CDSCard> checkContraindications(String service, Bundle bundle) {
         bundleRequestValidator.validate(bundle);
 
-        CDSRequest cdsRequest = new CDSRequest();
+        Prefetch prefetch = Prefetch.builder().build();
+        CDSRequest cdsRequest = CDSRequest.builder()
+                                .hook(service)
+                                .prefetch(prefetch)
+                                .build();
 
         for (PayloadGenerator payloadGenerator : payloadGenerators) {
             payloadGenerator.generate(bundle, cdsRequest);
         }
-
-        cdsRequest.setHook(service);
 
         System.out.println(cdsRequest);
         return validateInteractions(cdsRequest);

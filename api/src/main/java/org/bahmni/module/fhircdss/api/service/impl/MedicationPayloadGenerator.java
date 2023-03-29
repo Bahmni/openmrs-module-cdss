@@ -49,12 +49,12 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
     }
 
     @Override
-    public void generate(Bundle requestBundle, CDSRequest cdsRequest) {
-        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(requestBundle);
+    public void generate(Bundle inputBundle, CDSRequest cdsRequest) {
+        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(inputBundle);
         List<Order> activeOrders = getActiveOrders(patientUuid);
         Bundle medicationBundle = getMedicationBundleForActiveOrders(activeOrders);
 
-        addMedicationsFromRequest(requestBundle, medicationBundle);
+        addMedicationsFromRequest(inputBundle, medicationBundle);
 
         cdsRequest.getPrefetch().setDraftMedicationRequests(medicationBundle);
     }

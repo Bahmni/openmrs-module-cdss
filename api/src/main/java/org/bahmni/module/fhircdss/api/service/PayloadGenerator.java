@@ -5,5 +5,5 @@ import org.hl7.fhir.r4.model.Bundle;
 
 public interface PayloadGenerator {
 
-    void generate(Bundle bundle, CDSRequest cdsRequest);
+    void generate(Bundle inputBundle, CDSRequest cdsRequest);
 }

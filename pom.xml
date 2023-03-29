@@ -26,6 +26,7 @@
         <mockitoVersion>3.5.11</mockitoVersion>
         <junitVersion>4.13.1</junitVersion>
         <jacocoVersion>0.8.3</jacocoVersion>
+        <lombokVersion>1.18.26</lombokVersion>
     </properties>
     <scm>
         <connection>scm:git:git://github.com/bahmni/openmrs-module-cdss.git</connection>
@@ -210,6 +211,11 @@
                 <artifactId>fhir2-omod</artifactId>
                 <version>${openmrsFhir2Version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombokVersion}</version>
             </dependency>
 
             <dependency>

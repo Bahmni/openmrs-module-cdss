@@ -25,7 +25,7 @@
 	</globalProperty>
 
 	<globalProperty>
-		<property>cdss.baseurl</property>
+		<property>cdss.fhir.baseurl</property>
 		<defaultValue>http://localhost</defaultValue>
 		<description>Base URL of the CDSS server</description>
 	</globalProperty>

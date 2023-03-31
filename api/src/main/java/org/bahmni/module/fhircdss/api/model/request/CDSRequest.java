@@ -4,20 +4,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
+
 @Getter
 @Setter
 @Builder
-public class CDSRequest {
+public class CDSRequest implements Serializable {
 
     private String hook;
 
     private Prefetch prefetch;
 
-    @Override
-    public String toString() {
-        return "{" +
-                "\"hook\" : \"" + hook + "\"" +
-                ",\"prefetch\" : " + prefetch.toString() +
-                '}';
-    }
 }

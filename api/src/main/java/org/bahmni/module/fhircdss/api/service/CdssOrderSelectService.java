@@ -6,7 +6,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import java.util.List;
 
 public interface CdssOrderSelectService {
+    public static final String CDSS_SERVER_BASE_URL_GLOBAL_PROP = "cdss.fhir.baseurl";
 
-    List<CDSCard> checkContraindications(String service, Bundle bundle);
-
+    List<CDSCard> validateInteractions(String serviceName, Bundle bundle);
 }

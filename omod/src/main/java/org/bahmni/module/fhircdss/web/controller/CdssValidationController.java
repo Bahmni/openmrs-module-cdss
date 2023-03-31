@@ -7,11 +7,7 @@ import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,8 +24,8 @@ public class CdssValidationController extends BaseRestController {
 
     @PostMapping
     @ResponseBody
-    public List<CDSCard> validate(@RequestParam(value = "interaction") String interaction, @RequestBody Bundle bundle) {
-        return orderSelectService.checkContraindications(interaction, bundle);
+    public List<CDSCard> validate(@RequestParam(value = "service") String serviceName, @RequestBody Bundle bundle) {
+        return orderSelectService.validateInteractions(serviceName, bundle);
     }
 
 }

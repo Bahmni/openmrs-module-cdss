@@ -2,13 +2,8 @@ package org.bahmni.module.fhircdss.api.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.bahmni.module.fhircdss.api.client.RestClient;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
 import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
 import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
@@ -17,11 +12,9 @@ import org.bahmni.module.fhircdss.api.service.CdssOrderSelectService;
 import org.bahmni.module.fhircdss.api.service.PayloadGenerator;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
 import org.hl7.fhir.r4.model.Bundle;
-import org.openmrs.api.APIException;
+import org.openmrs.api.context.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,51 +27,45 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     @Autowired
     private List<PayloadGenerator> payloadGenerators;
 
+    @Autowired
+    private RestClient restClient;
+
+
     @Override
-    public List<CDSCard> checkContraindications(String service, Bundle bundle) {
+    public List<CDSCard> validateInteractions(String serviceName, Bundle bundle) {
         bundleRequestValidator.validate(bundle);
 
         Prefetch prefetch = Prefetch.builder().build();
         CDSRequest cdsRequest = CDSRequest.builder()
-                                .hook(service)
-                                .prefetch(prefetch)
-                                .build();
-
+                .hook(serviceName)
+                .prefetch(prefetch)
+                .build();
         for (PayloadGenerator payloadGenerator : payloadGenerators) {
             payloadGenerator.generate(bundle, cdsRequest);
         }
-
-        System.out.println(cdsRequest);
-        return validateInteractions(cdsRequest);
+        return checkForContraindications(serviceName, cdsRequest);
     }
 
-    private List<CDSCard> validateInteractions(CDSRequest cdsRequest) {
-        String cdssEndPoint = "https://cdss-dev.snomed.mybahmni.in/cds-services/medication-order-select";
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(URI.create(cdssEndPoint));
-            httpPost.setEntity(new StringEntity(cdsRequest.toString()));
+    private List<CDSCard> checkForContraindications(String serviceName, CDSRequest cdsRequest) {
+        String cdssEndPoint = getCdssGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP) + serviceName;
+        String responseStr = restClient.getResponse(cdssEndPoint, cdsRequest);
+        return toCdsAlerts(Optional.of(responseStr).orElseThrow(CdssException::new));
+    }
 
-            httpPost.addHeader("Content-Type", "application/json");
-            httpPost.addHeader("Accept", "application/json");
-            ResponseHandler<String> responseHandler = response -> {
-                int status = response.getStatusLine().getStatusCode();
-                if (status >= 200 && status < 300) {
-                    HttpEntity entity = response.getEntity();
-                    return entity != null ? EntityUtils.toString(entity) : null;
-                } else {
-                    throw new APIException("Unexpected response status: " + status);
-                }
-            };
-            String responseStr = httpclient.execute(httpPost, responseHandler);
-            return toCdsAlerts(Optional.of(responseStr).orElseThrow(RuntimeException::new));
-
-        } catch (IOException e) {
+    private List<CDSCard> toCdsAlerts(String responseStr) {
+        Map<String, List<CDSCard>> cards = null;
+        try {
+            cards = new ObjectMapper().readValue(responseStr, java.util.Map.class);
+        } catch (JsonProcessingException e) {
             throw new CdssException(e);
         }
+        return cards.get("cards");
     }
 
-    private List<CDSCard> toCdsAlerts(String responseStr) throws JsonProcessingException {
-        Map<String, List<CDSCard>> cards = new ObjectMapper().readValue(responseStr, java.util.Map.class);
-        return cards.get("cards");
+    private String getCdssGlobalProperty(String propertyName) {
+        String propertyValue = Context.getAdministrationService().getGlobalProperty(propertyName);
+        if (StringUtils.isBlank(propertyValue))
+            throw new CdssException();
+        return propertyValue;
     }
 }

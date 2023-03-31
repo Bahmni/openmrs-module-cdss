@@ -5,9 +5,9 @@ import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
 import ca.uhn.fhir.rest.param.ReferenceOrListParam;
 import ca.uhn.fhir.rest.param.ReferenceParam;
-import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
-import org.bahmni.module.fhircdss.api.service.PayloadGenerator;
+import org.bahmni.module.fhircdss.api.service.RequestBuilder;
 import org.bahmni.module.fhircdss.api.util.CdssUtils;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class ConditionsPayloadGenerator implements PayloadGenerator {
+public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
 
     private static final String VISIT_DIAGNOSES = "Visit Diagnoses";
 
@@ -52,7 +52,7 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
     private FhirConditionService fhirConditionService;
 
     @Autowired
-    public ConditionsPayloadGenerator(PatientService patientService, ObsService obsService, ConceptService conceptService, ConceptTranslator conceptTranslator, FhirConditionService fhirConditionService) {
+    public ConditionsRequestBuilder(PatientService patientService, ObsService obsService, ConceptService conceptService, ConceptTranslator conceptTranslator, FhirConditionService fhirConditionService) {
         this.patientService = patientService;
         this.obsService = obsService;
         this.conceptService = conceptService;
@@ -61,19 +61,19 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
     }
 
     @Override
-    public void generate(Bundle inputBundle, CDSRequest cdsRequest) {
+    public Bundle build(Bundle inputBundle) {
         Bundle conditionsBundle = new Bundle();
-
         String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(inputBundle);
 
-        addExistingActiveDiagnosesToBundle(conditionsBundle, patientUuid);
-        addExistingActiveConditionsToBundle(conditionsBundle, patientUuid);
+        addExistingActiveDiagnoses(conditionsBundle, patientUuid);
+        addExistingActiveConditions(conditionsBundle, patientUuid);
 
-        addDraftConditionsFromRequestPayload(conditionsBundle, inputBundle);
-        cdsRequest.getPrefetch().setConditions(conditionsBundle);
+        addDraftDiagnosisAndConditions(conditionsBundle, inputBundle);
+
+        return conditionsBundle;
     }
 
-    private void addExistingActiveDiagnosesToBundle(Bundle conditionsBundle, String patientUuid) {
+    private void addExistingActiveDiagnoses(Bundle conditionsBundle, String patientUuid) {
         Patient patient = patientService.getPatientByUuid(patientUuid);
         Concept visitDiagnosesConcept = conceptService.getConceptByName(VISIT_DIAGNOSES);
         List<Obs> visitDiagnosesObs = obsService.getObservationsByPersonAndConcept(patient.getPerson(), visitDiagnosesConcept);
@@ -92,7 +92,7 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
                                   });
     }
 
-    private void addExistingActiveConditionsToBundle(Bundle conditionsBundle, String patientUuid) {
+    private void addExistingActiveConditions(Bundle conditionsBundle, String patientUuid) {
         IParser parser = CdssUtils.getFhirJsonParser();
 
         ReferenceAndListParam referenceAndListParam = new ReferenceAndListParam();
@@ -105,16 +105,17 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
                 null, null, null, null,
                 null);
 
-        for (int i = 0; i < iBundleProvider.getAllResources().size(); i++) {
-            Condition fhirCondition = parser.parseResource(Condition.class, parser.encodeResourceToString(iBundleProvider.getAllResources().get(i)));
+        for (IBaseResource conditionBaseResource : iBundleProvider.getAllResources()) {
+            Condition fhirCondition = parser.parseResource(Condition.class, parser.encodeResourceToString(conditionBaseResource));
             Optional<Coding> clinicalStatusOptional = fhirCondition.getClinicalStatus().getCoding().stream().filter(coding -> STATUS_ACTIVE.equalsIgnoreCase(coding.getDisplay())).findFirst();
             if (clinicalStatusOptional.isPresent()) {
                 addEntryToConditionsBundle(conditionsBundle, fhirCondition);
             }
         }
+
     }
 
-    private void addDraftConditionsFromRequestPayload(Bundle conditionsBundle, Bundle requestBundle) {
+    private void addDraftDiagnosisAndConditions(Bundle conditionsBundle, Bundle requestBundle) {
         List<Bundle.BundleEntryComponent> conditionEntries = requestBundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
 
         for (Bundle.BundleEntryComponent conditionEntry : conditionEntries) {
@@ -132,17 +133,6 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
         conditionsBundle.addEntry(bundleEntryComponent);
     }
 
-    private Obs getObsFor(Obs visitDiagnosisObsGroup, String conceptName) {
-        Optional<Obs> optionalObs = visitDiagnosisObsGroup.getGroupMembers()
-                                                    .stream()
-                                                    .filter(obs -> obs.getConcept().getName().getName().equals(conceptName))
-                                                    .findFirst();
-        if (optionalObs.isPresent()) {
-            return optionalObs.get();
-        }
-        return null;
-    }
-
     private boolean isActiveDiagnosis(Obs visitDiagnosisObsGroup) {
         Obs codedDiagnosisStatusObs = getObsFor(visitDiagnosisObsGroup, BAHMNI_DIAGNOSIS_STATUS);
         return codedDiagnosisStatusObs == null;
@@ -150,5 +140,16 @@ public class ConditionsPayloadGenerator implements PayloadGenerator {
 
     private Obs getCodedDiagnosis(Obs visitDiagnosisObsGroup) {
         return getObsFor(visitDiagnosisObsGroup, CODED_DIAGNOSIS);
+    }
+
+    private Obs getObsFor(Obs visitDiagnosisObsGroup, String conceptName) {
+        Optional<Obs> optionalObs = visitDiagnosisObsGroup.getGroupMembers()
+                .stream()
+                .filter(obs -> obs.getConcept().getName().getName().equals(conceptName))
+                .findFirst();
+        if (optionalObs.isPresent()) {
+            return optionalObs.get();
+        }
+        return null;
     }
 }

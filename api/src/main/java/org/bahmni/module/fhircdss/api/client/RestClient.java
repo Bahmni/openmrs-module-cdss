@@ -1,6 +1,5 @@
 package org.bahmni.module.fhircdss.api.client;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ResponseHandler;

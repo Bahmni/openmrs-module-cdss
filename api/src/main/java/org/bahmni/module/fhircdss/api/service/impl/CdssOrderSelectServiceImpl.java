@@ -9,7 +9,6 @@ import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
 import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
 import org.bahmni.module.fhircdss.api.model.request.Prefetch;
 import org.bahmni.module.fhircdss.api.service.CdssOrderSelectService;
-import org.bahmni.module.fhircdss.api.service.PayloadGenerator;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
 import org.hl7.fhir.r4.model.Bundle;
 import org.openmrs.api.context.Context;
@@ -25,24 +24,29 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     private BundleRequestValidator bundleRequestValidator;
 
     @Autowired
-    private List<PayloadGenerator> payloadGenerators;
+    private PatientRequestBuilder patientRequestBuilder;
+
+    @Autowired
+    private ConditionsRequestBuilder conditionsRequestBuilder;
+
+    @Autowired
+    private MedicationRequestBuilder medicationRequestBuilder;
 
     @Autowired
     private RestClient restClient;
-
 
     @Override
     public List<CDSCard> validateInteractions(String serviceName, Bundle bundle) {
         bundleRequestValidator.validate(bundle);
 
-        Prefetch prefetch = Prefetch.builder().build();
+        Prefetch prefetch = Prefetch.builder().patient(patientRequestBuilder.build(bundle))
+                                              .conditions(conditionsRequestBuilder.build(bundle))
+                                              .draftMedicationRequests(medicationRequestBuilder.build(bundle))
+                                              .build();
         CDSRequest cdsRequest = CDSRequest.builder()
                 .hook(serviceName)
                 .prefetch(prefetch)
                 .build();
-        for (PayloadGenerator payloadGenerator : payloadGenerators) {
-            payloadGenerator.generate(bundle, cdsRequest);
-        }
         return checkForContraindications(serviceName, cdsRequest);
     }
 

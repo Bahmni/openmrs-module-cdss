@@ -1,7 +1,6 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
-import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
-import org.bahmni.module.fhircdss.api.service.PayloadGenerator;
+import org.bahmni.module.fhircdss.api.service.RequestBuilder;
 import org.bahmni.module.fhircdss.api.util.CdssUtils;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -22,13 +21,12 @@ import org.openmrs.module.fhir2.api.FhirMedicationRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class MedicationPayloadGenerator implements PayloadGenerator {
+public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
 
     private static final String DRUG_ORDER = "Drug order";
 
@@ -41,7 +39,7 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
     private FhirMedicationRequestService fhirMedicationRequestService;
 
     @Autowired
-    public MedicationPayloadGenerator(PatientService patientService, OrderService orderService, FhirConceptSourceService fhirConceptSourceService, FhirMedicationRequestService fhirMedicationRequestService) {
+    public MedicationRequestBuilder(PatientService patientService, OrderService orderService, FhirConceptSourceService fhirConceptSourceService, FhirMedicationRequestService fhirMedicationRequestService) {
         this.patientService = patientService;
         this.orderService = orderService;
         this.fhirConceptSourceService = fhirConceptSourceService;
@@ -49,25 +47,16 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
     }
 
     @Override
-    public void generate(Bundle inputBundle, CDSRequest cdsRequest) {
+    public Bundle build(Bundle inputBundle) {
+        Bundle medicationBundle = new Bundle();
+        addExistingActiveMedications(inputBundle, medicationBundle);
+        addDraftMedications(inputBundle, medicationBundle);
+        return medicationBundle;
+    }
+
+    private Bundle addExistingActiveMedications(Bundle inputBundle, Bundle medicationBundle) {
         String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(inputBundle);
         List<Order> activeOrders = getActiveOrders(patientUuid);
-        Bundle medicationBundle = getMedicationBundleForActiveOrders(activeOrders);
-
-        addMedicationsFromRequest(inputBundle, medicationBundle);
-
-        cdsRequest.getPrefetch().setDraftMedicationRequests(medicationBundle);
-    }
-
-    private List<Order> getActiveOrders(String patientUuid) {
-        Patient openmrsPatient = patientService.getPatientByUuid(patientUuid);
-        CareSetting careSetting = orderService.getCareSettingByName(CareSetting.CareSettingType.OUTPATIENT.toString());
-        OrderType drugOrderType = orderService.getOrderTypeByName(DRUG_ORDER);
-        return orderService.getActiveOrders(openmrsPatient, drugOrderType, careSetting, new Date());
-    }
-
-    private Bundle getMedicationBundleForActiveOrders(List<Order> activeOrders) {
-        Bundle medicationBundle = new Bundle();
         for (Order order : activeOrders) {
             MedicationRequest medicationRequest = fhirMedicationRequestService.get(order.getUuid());
             CodeableConcept codeableConcept = getCodeableConceptForMedicationRequest(order);
@@ -96,7 +85,7 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
         return codeableConcept;
     }
 
-    private void addMedicationsFromRequest(Bundle requestBundle, Bundle medicationBundle) {
+    private void addDraftMedications(Bundle requestBundle, Bundle medicationBundle) {
         List<Bundle.BundleEntryComponent> medicationEntries = requestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         medicationEntries.stream().forEach(medicationEntry -> addEntryToMedicationBundle(medicationBundle, (MedicationRequest) medicationEntry.getResource()));
     }
@@ -105,5 +94,12 @@ public class MedicationPayloadGenerator implements PayloadGenerator {
         Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
         bundleEntryComponent.setResource(medicationRequest);
         medicationBundle.addEntry(bundleEntryComponent);
+    }
+
+    private List<Order> getActiveOrders(String patientUuid) {
+        Patient openmrsPatient = patientService.getPatientByUuid(patientUuid);
+        CareSetting careSetting = orderService.getCareSettingByName(CareSetting.CareSettingType.OUTPATIENT.toString());
+        OrderType drugOrderType = orderService.getOrderTypeByName(DRUG_ORDER);
+        return orderService.getActiveOrders(openmrsPatient, drugOrderType, careSetting, null);
     }
 }

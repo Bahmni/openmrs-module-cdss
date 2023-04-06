@@ -1,0 +1,92 @@
+{
+  "resourceType": "Bundle",
+  "id": "some id",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "27cb23a4-2c6d-4d6d-b6c3-08039f73841f",
+        "subject": {
+          "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "1234",
+              "display": "Cholera"
+            }
+          ],
+          "text": "Cholera"
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "history-of",
+              "display": "History Of"
+            }
+          ]
+        },
+        "onsetDateTime": "2023-03-12T11:40:00.000Z",
+        "asserter": {
+          "display": "Super Man (superman)"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "27cb23a4-2c6d-4d6d-b6c3-08039f73841f",
+        "subject": {
+          "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "3456",
+              "display": "Steatosis of liver"
+            }
+          ],
+          "text": "Steatosis of liver"
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active",
+              "display": "Active"
+            }
+          ]
+        },
+        "onsetDateTime": "2023-03-12T11:40:00.000Z",
+        "recordedDate": "2023-03-12T11:45:00.000Z",
+        "asserter": {
+          "display": "Super Man (superman)"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "proposal",
+        "subject": {
+          "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+        },
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "4567",
+              "display": "Atorvastatin 20 mg"
+            }
+          ],
+          "text": "Atorvastatin 20 mg"
+        }
+      }
+    }
+  ]
+}

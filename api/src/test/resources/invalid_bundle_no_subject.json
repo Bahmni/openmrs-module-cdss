@@ -1,0 +1,121 @@
+{
+  "resourceType": "Bundle",
+  "id": "some id",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "27cb23a4-2c6d-4d6d-b6c3-08039f73841f",
+        "subject": {
+          "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "1234",
+              "display": "Malaria"
+            }
+          ],
+          "text": "Malaria"
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "history-of",
+              "display": "History Of"
+            }
+          ]
+        },
+        "onsetDateTime": "2023-03-12T11:40:00.000Z",
+        "asserter": {
+          "display": "Super Man (superman)"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "31c841ad-1086-4ef6-a212-bc5ddfab734b",
+        "subject": {
+          "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "2345",
+              "display": "Hyperchloremic acidosis"
+            }
+          ],
+          "text": "Hyperchloremic acidosis"
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active",
+              "display": "Active"
+            }
+          ]
+        },
+        "onsetDateTime": "2023-03-12T11:40:00.000Z",
+        "asserter": {
+          "display": "Super Man (superman)"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "27cb23a4-2c6d-4d6d-b6c3-08039f73841f",
+        "subject": {
+          "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "3456",
+              "display": "Hypokalemia"
+            }
+          ],
+          "text": "Hypokalemia"
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active",
+              "display": "Active"
+            }
+          ]
+        },
+        "onsetDateTime": "2023-03-12T11:40:00.000Z",
+        "recordedDate": "2023-03-12T11:45:00.000Z",
+        "asserter": {
+          "display": "Super Man (superman)"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "proposal",
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "4567",
+              "display": "Acetazolamide 250 mg"
+            }
+          ],
+          "text": "Acetazolamide 250 mg"
+        }
+      }
+    }
+  ]
+}

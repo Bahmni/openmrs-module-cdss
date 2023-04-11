@@ -1,11 +1,10 @@
 package org.bahmni.module.fhircdss.api.model.alert;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
+@Getter
 @Setter
 public class CDSSource {
 

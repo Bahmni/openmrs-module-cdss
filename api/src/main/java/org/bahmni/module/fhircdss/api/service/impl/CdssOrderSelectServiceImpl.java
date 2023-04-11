@@ -10,6 +10,7 @@ import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
 import org.bahmni.module.fhircdss.api.model.request.Prefetch;
 import org.bahmni.module.fhircdss.api.service.CdssOrderSelectService;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
+import org.bahmni.module.fhircdss.api.validator.CdsServiceValidator;
 import org.hl7.fhir.r4.model.Bundle;
 import org.openmrs.api.context.Context;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
 
     @Autowired
     private BundleRequestValidator bundleRequestValidator;
+
+    @Autowired
+    private CdsServiceValidator cdsServiceValidator;
 
     @Autowired
     private PatientRequestBuilder patientRequestBuilder;
@@ -37,6 +41,7 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
 
     @Override
     public List<CDSCard> validateInteractions(String serviceName, Bundle bundle) {
+        cdsServiceValidator.validate(serviceName);
         bundleRequestValidator.validate(bundle);
 
         Prefetch prefetch = Prefetch.builder().patient(patientRequestBuilder.build(bundle))
@@ -51,7 +56,7 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     }
 
     private List<CDSCard> checkForContraindications(String serviceName, CDSRequest cdsRequest) {
-        String cdssEndPoint = getCdssGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP) + serviceName;
+        String cdssEndPoint = getCdssGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP) + "/" + serviceName;
         String responseStr = restClient.getResponse(cdssEndPoint, cdsRequest);
         return toCdsAlerts(Optional.of(responseStr).orElseThrow(CdssException::new));
     }

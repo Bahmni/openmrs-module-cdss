@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import org.bahmni.module.fhircdss.api.client.RestClient;
 import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
+import org.bahmni.module.fhircdss.api.validator.CdsServiceValidator;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Patient;
 import org.junit.Assert;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CDSS_SERVER_BASE_URL_GLOBAL_PROP;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,6 +48,9 @@ public class CdssOrderSelectServiceImplTest {
 
     @Mock
     private BundleRequestValidator bundleRequestValidator;
+
+    @Mock
+    private CdsServiceValidator cdsServiceValidator;
 
     @Mock
     private PatientRequestBuilder patientRequestBuilder;
@@ -77,6 +82,7 @@ public class CdssOrderSelectServiceImplTest {
     public void shouldGetAlerts_whenStatinPrescribedForPatientHavingLiverDisease() throws Exception {
         Bundle mockRequestBundle = getMockRequestBundle();
         doNothing().when(bundleRequestValidator).validate(mockRequestBundle);
+        doNothing().when(cdsServiceValidator).validate(anyString());
         when(patientRequestBuilder.build(mockRequestBundle)).thenReturn(new Patient());
         when(conditionsRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(medicationRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());

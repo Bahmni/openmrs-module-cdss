@@ -1,10 +1,10 @@
 package org.bahmni.module.fhircdss.api.model.alert;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@Setter
 public class CDSCard {
 
 	private String uuid;

@@ -1,12 +1,10 @@
 package org.bahmni.module.fhircdss.api.model.alert;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
+@Getter
+@Setter
 public class CDSCoding {
 
 	private String system;

@@ -4,11 +4,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
+import org.bahmni.module.fhircdss.api.model.cdsservice.Service;
 import org.bahmni.module.fhircdss.api.model.cdsservice.Services;
 import org.openmrs.api.context.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CDSS_SERVER_BASE_URL_GLOBAL_PROP;
 
@@ -25,7 +29,7 @@ public class CdsServiceValidator {
     }
 
     public void validate(String serviceName) {
-        String cdssServiceEndPoint = getCdssGlobalPropertyEndPoint();
+        String cdssServiceEndPoint = getCdssServiceEndPoint();
         Services services = restTemplate.getForObject(cdssServiceEndPoint, Services.class);
         boolean serviceExists = services.getServices().stream().filter(service -> service.getId().equals(serviceName)).count() > 0;
         if (!serviceExists) {
@@ -35,7 +39,7 @@ public class CdsServiceValidator {
         }
     }
 
-    private String getCdssGlobalPropertyEndPoint() {
+    private String getCdssServiceEndPoint() {
         String propertyValue = Context.getAdministrationService().getGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP);
         if (StringUtils.isBlank(propertyValue)) {
             log.error("CDSS Host URL in empty");

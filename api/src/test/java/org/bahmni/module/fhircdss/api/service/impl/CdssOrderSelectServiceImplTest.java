@@ -1,7 +1,9 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
 import ca.uhn.fhir.context.FhirContext;
-import org.bahmni.module.fhircdss.api.client.RestClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bahmni.module.fhircdss.api.exception.CdssException;
 import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
 import org.bahmni.module.fhircdss.api.validator.CdsServiceValidator;
@@ -21,12 +23,16 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CDSS_SERVER_BASE_URL_GLOBAL_PROP;
@@ -37,11 +43,16 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.refEq;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Context.class, LocaleUtility.class})
 @PowerMockIgnore("javax.management.*")
 public class CdssOrderSelectServiceImplTest {
+
+    @Mock
+    @Qualifier("adminService")
+    AdministrationService administrationService;
 
     @InjectMocks
     private CdssOrderSelectServiceImpl cdssOrderSelectService;
@@ -62,11 +73,7 @@ public class CdssOrderSelectServiceImplTest {
     private MedicationRequestBuilder medicationRequestBuilder;
 
     @Mock
-    private RestClient restClient;
-
-    @Mock
-    @Qualifier("adminService")
-    AdministrationService administrationService;
+    private RestTemplate restTemplate;
 
     @Mock
     private UserContext userContext;
@@ -86,7 +93,7 @@ public class CdssOrderSelectServiceImplTest {
         when(patientRequestBuilder.build(mockRequestBundle)).thenReturn(new Patient());
         when(conditionsRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(medicationRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
-        when(restClient.getResponse(any(), any())).thenReturn(getResponse());
+        when(restTemplate.postForEntity(anyString(), any(), refEq(java.util.Map.class))).thenReturn(getResponse());
 
         List<CDSCard> cdsCards = cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle);
 
@@ -103,9 +110,17 @@ public class CdssOrderSelectServiceImplTest {
         return FhirContext.forR4().newJsonParser().parseResource(Bundle.class, mockStr);
     }
 
-    private String getResponse() throws Exception {
+    private ResponseEntity<Map> getResponse() throws Exception {
         Path path = Paths.get(getClass().getClassLoader()
                 .getResource("response_warning.json").toURI());
-        return Files.lines(path, StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
+        String responseStr = Files.lines(path, StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
+        Map<String, List<CDSCard>> cards = null;
+        try {
+            cards = new ObjectMapper().readValue(responseStr, java.util.Map.class);
+        } catch (JsonProcessingException e) {
+            throw new CdssException(e);
+        }
+        ResponseEntity<Map> responseEntityMap = new ResponseEntity<>(cards, HttpStatus.OK);
+        return responseEntityMap;
     }
 }

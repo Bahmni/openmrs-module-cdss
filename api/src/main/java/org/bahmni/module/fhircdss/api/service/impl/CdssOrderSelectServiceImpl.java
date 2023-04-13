@@ -3,7 +3,7 @@ package org.bahmni.module.fhircdss.api.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.bahmni.module.fhircdss.api.client.RestClient;
+import org.apache.log4j.Logger;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
 import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
 import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
@@ -14,13 +14,19 @@ import org.bahmni.module.fhircdss.api.validator.CdsServiceValidator;
 import org.hl7.fhir.r4.model.Bundle;
 import org.openmrs.api.context.Context;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
-
+    private static Logger logger = Logger.getLogger(CdssOrderSelectServiceImpl.class);
     @Autowired
     private BundleRequestValidator bundleRequestValidator;
 
@@ -37,7 +43,7 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     private MedicationRequestBuilder medicationRequestBuilder;
 
     @Autowired
-    private RestClient restClient;
+    private RestTemplate restTemplate;
 
     @Override
     public List<CDSCard> validateInteractions(String serviceName, Bundle bundle) {
@@ -45,9 +51,9 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
         bundleRequestValidator.validate(bundle);
 
         Prefetch prefetch = Prefetch.builder().patient(patientRequestBuilder.build(bundle))
-                                              .conditions(conditionsRequestBuilder.build(bundle))
-                                              .draftMedicationRequests(medicationRequestBuilder.build(bundle))
-                                              .build();
+                .conditions(conditionsRequestBuilder.build(bundle))
+                .draftMedicationRequests(medicationRequestBuilder.build(bundle))
+                .build();
         CDSRequest cdsRequest = CDSRequest.builder()
                 .hook(serviceName)
                 .prefetch(prefetch)
@@ -57,24 +63,41 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
 
     private List<CDSCard> checkForContraindications(String serviceName, CDSRequest cdsRequest) {
         String cdssEndPoint = getCdssGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP) + "/" + serviceName;
-        String responseStr = restClient.getResponse(cdssEndPoint, cdsRequest);
-        return toCdsAlerts(Optional.of(responseStr).orElseThrow(CdssException::new));
+        ResponseEntity<Map> responseEntityMap = restTemplate.postForEntity(cdssEndPoint, getEntityRequest(cdsRequest), java.util.Map.class);
+        int status = responseEntityMap.getStatusCode().value();
+        if (status >= 200 && status < 300) {
+            Map<String, List<CDSCard>> cards = responseEntityMap.getBody();
+            return Optional.of(cards.get("cards")).orElseThrow(CdssException::new);
+        } else {
+            logger.error("Call to CDS server failed with response status code = " + status);
+            throw new CdssException();
+        }
     }
 
-    private List<CDSCard> toCdsAlerts(String responseStr) {
-        Map<String, List<CDSCard>> cards = null;
+    private HttpEntity<String> getEntityRequest(CDSRequest cdsRequest) {
+        HttpEntity<String> cdsEntityRequest = null;
         try {
-            cards = new ObjectMapper().readValue(responseStr, java.util.Map.class);
+            cdsEntityRequest = new HttpEntity<String>(new ObjectMapper().writeValueAsString(cdsRequest), getHeaders());
         } catch (JsonProcessingException e) {
-            throw new CdssException(e);
+            logger.error("Error in transforming CDS request into JSON");
+            throw new CdssException();
         }
-        return cards.get("cards");
+        return cdsEntityRequest;
+    }
+
+    private HttpHeaders getHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        return headers;
     }
 
     private String getCdssGlobalProperty(String propertyName) {
         String propertyValue = Context.getAdministrationService().getGlobalProperty(propertyName);
-        if (StringUtils.isBlank(propertyValue))
+        if (StringUtils.isBlank(propertyValue)) {
+            logger.error("Global property '" + propertyName + "' value is missing");
             throw new CdssException();
+        }
         return propertyValue;
     }
 }

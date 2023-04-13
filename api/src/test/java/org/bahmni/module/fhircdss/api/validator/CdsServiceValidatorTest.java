@@ -53,7 +53,7 @@ public class CdsServiceValidatorTest {
     }
 
     @Test
-    public void shouldPassValidateService_whenCdssEngineSupportsRequestedService() {
+    public void shouldPassValidateService_whenCdssEngineAccessedWithValidService() {
         Services services = getServices();
         when(restTemplate.getForObject("http://localhost", Services.class)).thenReturn(services);
         when(administrationService.getGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP)).thenReturn("http://localhost");
@@ -80,7 +80,7 @@ public class CdsServiceValidatorTest {
         when(administrationService.getGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP)).thenReturn("");
 
         thrown.expect(CdssException.class);
-        thrown.expectMessage("CDSS Host URL in empty");
+        thrown.expectMessage("CDSS Host URL is empty");
 
         cdsServiceValidator.validate("medication-order-select");
     }

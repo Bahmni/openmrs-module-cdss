@@ -64,12 +64,11 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     private List<CDSCard> checkForContraindications(String serviceName, CDSRequest cdsRequest) {
         String cdssEndPoint = getCdssGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP) + "/" + serviceName;
         ResponseEntity<Map> responseEntityMap = restTemplate.postForEntity(cdssEndPoint, getEntityRequest(cdsRequest), java.util.Map.class);
-        int status = responseEntityMap.getStatusCode().value();
-        if (status >= 200 && status < 300) {
+        if (responseEntityMap.getStatusCode().is2xxSuccessful()) {
             Map<String, List<CDSCard>> cards = responseEntityMap.getBody();
             return Optional.of(cards.get("cards")).orElseThrow(CdssException::new);
         } else {
-            logger.error("Call to CDS server failed with response status code = " + status);
+            logger.error("Call to CDS server failed with response status code = " + responseEntityMap.getStatusCode().value());
             throw new CdssException();
         }
     }
@@ -95,7 +94,8 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     private String getCdssGlobalProperty(String propertyName) {
         String propertyValue = Context.getAdministrationService().getGlobalProperty(propertyName);
         if (StringUtils.isBlank(propertyValue)) {
-            logger.error("Global property '" + propertyName + "' value is missing");
+            String errorMessage = String.format("Global property '%s' value is missing", propertyName);
+            logger.error(errorMessage);
             throw new CdssException();
         }
         return propertyValue;

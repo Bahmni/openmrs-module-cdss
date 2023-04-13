@@ -38,8 +38,8 @@ public class CdsServiceValidator {
     private String getCdssServiceEndPoint() {
         String propertyValue = Context.getAdministrationService().getGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP);
         if (StringUtils.isBlank(propertyValue)) {
-            log.error("CDSS Host URL in empty");
-            throw new CdssException("CDSS Host URL in empty");
+            log.error("CDSS Host URL is empty");
+            throw new CdssException("CDSS Host URL is empty");
         }
         return propertyValue;
     }

@@ -18,6 +18,11 @@
 		<require_module>org.openmrs.module.fhir2</require_module>
 	</require_modules>
 
+	<privilege>
+		<name>Execute CDSS</name>
+		<description>Ability to run CDSS rules</description>
+	</privilege>
+
 	<globalProperty>
 		<property>cdss.enable</property>
 		<defaultValue>false</defaultValue>

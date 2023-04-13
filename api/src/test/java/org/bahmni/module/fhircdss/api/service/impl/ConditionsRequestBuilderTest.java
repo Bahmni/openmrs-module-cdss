@@ -8,7 +8,6 @@ import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.ResourceType;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +43,7 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -107,7 +107,7 @@ public class ConditionsRequestBuilderTest {
         Bundle conditionBundle = conditionsRequestBuilder.build(mockRequestBundle);
 
         List<Bundle.BundleEntryComponent> resultConditionEntries = conditionBundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
-        Assert.assertEquals(2, resultConditionEntries.size());
+        assertEquals(2, resultConditionEntries.size());
     }
 
     @Test
@@ -134,7 +134,7 @@ public class ConditionsRequestBuilderTest {
         Bundle conditionBundle = conditionsRequestBuilder.build(mockRequestBundle);
 
         List<Bundle.BundleEntryComponent> resultConditionEntries = conditionBundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
-        Assert.assertEquals(2, resultConditionEntries.size());
+        assertEquals(2, resultConditionEntries.size());
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ConditionsRequestBuilderTest {
         Bundle conditionBundle = conditionsRequestBuilder.build(mockRequestBundle);
 
         List<Bundle.BundleEntryComponent> resultConditionEntries = conditionBundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
-        Assert.assertEquals(1, resultConditionEntries.size());
+        assertEquals(1, resultConditionEntries.size());
     }
 
     private Bundle getMockRequestBundle() throws Exception {

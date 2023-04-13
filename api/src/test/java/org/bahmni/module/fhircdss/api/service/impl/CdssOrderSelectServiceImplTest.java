@@ -7,7 +7,6 @@ import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
 import org.bahmni.module.fhircdss.api.validator.CdsServiceValidator;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Patient;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CDSS_SERVER_BASE_URL_GLOBAL_PROP;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -93,7 +93,7 @@ public class CdssOrderSelectServiceImplTest {
         verify(patientRequestBuilder, times(1)).build(mockRequestBundle);
         verify(conditionsRequestBuilder, times(1)).build(mockRequestBundle);
         verify(medicationRequestBuilder, times(1)).build(mockRequestBundle);
-        Assert.assertEquals(1, cdsCards.size());
+        assertEquals(1, cdsCards.size());
     }
 
     private Bundle getMockRequestBundle() throws Exception {

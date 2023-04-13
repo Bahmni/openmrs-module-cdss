@@ -24,7 +24,7 @@
         <webServicesVersion>2.39.0</webServicesVersion>
         <powerMockVersion>2.0.9</powerMockVersion>
         <mockitoVersion>3.5.11</mockitoVersion>
-        <junitVersion>4.13.1</junitVersion>
+        <junitVersion>4.13.2</junitVersion>
         <jacocoVersion>0.8.3</jacocoVersion>
         <lombokVersion>1.18.26</lombokVersion>
     </properties>

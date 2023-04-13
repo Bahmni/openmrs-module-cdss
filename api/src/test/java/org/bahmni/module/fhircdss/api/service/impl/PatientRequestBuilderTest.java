@@ -17,9 +17,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,9 +45,9 @@ public class PatientRequestBuilderTest {
         when(fhirPatientService.get(anyString())).thenReturn(getMockPatient());
         Patient result = patientRequestBuilder.build(mockBundle);
 
-        assertThat(result, notNullValue());
-        assertThat(result.getId(), notNullValue());
-        assertThat(result.getId(), equalTo(PATIENT_UUID));
+        assertNotNull(result);
+        assertNotNull(result.getId());
+        assertEquals(PATIENT_UUID, result.getId());
         verify(fhirPatientService, times(1)).get("dc9444c6-ad55-4200-b6e9-407e025eb948");
     }
 

@@ -4,7 +4,6 @@ import ca.uhn.fhir.context.FhirContext;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.MedicationRequest;
 import org.hl7.fhir.r4.model.ResourceType;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -28,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -64,8 +64,8 @@ public class MedicationRequestBuilderTest {
         List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         List<Bundle.BundleEntryComponent> inputMedicationEntries = mockRequestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
 
-        Assert.assertEquals(1, inputMedicationEntries.size());
-        Assert.assertEquals(2, resultMedicationEntries.size());
+        assertEquals(1, inputMedicationEntries.size());
+        assertEquals(2, resultMedicationEntries.size());
     }
 
     @Test
@@ -78,8 +78,8 @@ public class MedicationRequestBuilderTest {
         List<Bundle.BundleEntryComponent> medicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         List<Bundle.BundleEntryComponent> inputMedicationEntries = mockRequestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
 
-        Assert.assertEquals(1, medicationEntries.size());
-        Assert.assertEquals(inputMedicationEntries.size(), medicationEntries.size());
+        assertEquals(1, medicationEntries.size());
+        assertEquals(inputMedicationEntries.size(), medicationEntries.size());
     }
 
     private List<Order> getDrugOrders() {

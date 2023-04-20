@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
-import org.bahmni.module.fhircdss.api.model.cdsservice.Services;
+import org.bahmni.module.fhircdss.api.model.cdsservice.CDSServices;
 import org.openmrs.api.context.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,10 +26,10 @@ public class CdsServiceValidator {
 
     public void validate(String serviceName) {
         String cdssServiceEndPoint = getCdssServiceEndPoint();
-        Services services = restTemplate.getForObject(cdssServiceEndPoint, Services.class);
-        boolean serviceExists = services.getServices().stream().filter(service -> service.getId().equals(serviceName)).count() > 0;
+        CDSServices cdsServices = restTemplate.getForObject(cdssServiceEndPoint, CDSServices.class);
+        boolean serviceExists = cdsServices.getServices().stream().filter(service -> service.getId().equals(serviceName)).count() > 0;
         if (!serviceExists) {
-            String errorMessage = String.format("Service %s unavailable in the configured CDSS System", serviceName);
+            String errorMessage = String.format("CDSService %s unavailable in the configured CDSS System", serviceName);
             log.error(errorMessage);
             throw new CdssException(errorMessage);
         }

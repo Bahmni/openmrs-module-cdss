@@ -2,7 +2,7 @@ package org.bahmni.module.fhircdss.web.controller;
 
 import ca.uhn.fhir.context.FhirContext;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
-import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
+import org.bahmni.module.fhircdss.api.model.alert.CDSAlert;
 import org.bahmni.module.fhircdss.api.model.alert.CDSIndicator;
 import org.bahmni.module.fhircdss.api.model.alert.CDSSource;
 import org.bahmni.module.fhircdss.api.service.CdssOrderSelectService;
@@ -44,7 +44,7 @@ public class CdssValidationControllerTest {
         Bundle mockRequestBundle = getMockBundle("request_bundle.json");
         when(cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle)).thenReturn(getMockAlert());
 
-        List<CDSCard> alerts = cdssValidationController.validate("medication-order-select", mockRequestBundle);
+        List<CDSAlert> alerts = cdssValidationController.validate("medication-order-select", mockRequestBundle);
 
         assertNotNull(alerts);
         assertEquals(1, alerts.size());
@@ -70,8 +70,8 @@ public class CdssValidationControllerTest {
         return FhirContext.forR4().newJsonParser().parseResource(Bundle.class, mockString);
     }
 
-    private List<CDSCard> getMockAlert() {
-        CDSCard criticalAlert = new CDSCard();
+    private List<CDSAlert> getMockAlert() {
+        CDSAlert criticalAlert = new CDSAlert();
         CDSSource source = new CDSSource();
         source.setLabel("Wikipedia");
         source.setUrl("https://en.wikipedia.org/wiki/Atorvastatin#Contraindications");

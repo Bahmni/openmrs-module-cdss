@@ -1,8 +1,8 @@
 package org.bahmni.module.fhircdss.api.validator;
 
 import org.bahmni.module.fhircdss.api.exception.CdssException;
-import org.bahmni.module.fhircdss.api.model.cdsservice.Service;
-import org.bahmni.module.fhircdss.api.model.cdsservice.Services;
+import org.bahmni.module.fhircdss.api.model.cdsservice.CDSService;
+import org.bahmni.module.fhircdss.api.model.cdsservice.CDSServices;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,8 +54,8 @@ public class CdsServiceValidatorTest {
 
     @Test
     public void shouldPassValidateService_whenCdssEngineAccessedWithValidService() {
-        Services services = getServices();
-        when(restTemplate.getForObject("http://localhost", Services.class)).thenReturn(services);
+        CDSServices cdsServices = getServices();
+        when(restTemplate.getForObject("http://localhost", CDSServices.class)).thenReturn(cdsServices);
         when(administrationService.getGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP)).thenReturn("http://localhost");
 
         cdsServiceValidator.validate("medication-order-select");
@@ -63,20 +63,20 @@ public class CdsServiceValidatorTest {
 
     @Test
     public void shouldThrowException_whenCdssEngineAccessedWithInvalidService() {
-        Services services = getServices();
-        when(restTemplate.getForObject("http://localhost", Services.class)).thenReturn(services);
+        CDSServices cdsServices = getServices();
+        when(restTemplate.getForObject("http://localhost", CDSServices.class)).thenReturn(cdsServices);
         when(administrationService.getGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP)).thenReturn("http://localhost");
 
         thrown.expect(CdssException.class);
-        thrown.expectMessage("Service invalid-service unavailable in the configured CDSS System");
+        thrown.expectMessage("CDSService invalid-service unavailable in the configured CDSS System");
 
         cdsServiceValidator.validate("invalid-service");
     }
 
     @Test
     public void shouldThrowException_whenGlobalPropertyForCdssEndPointIsNotConfigured() {
-        Services services = getServices();
-        when(restTemplate.getForObject("http://localhost", Services.class)).thenReturn(services);
+        CDSServices cdsServices = getServices();
+        when(restTemplate.getForObject("http://localhost", CDSServices.class)).thenReturn(cdsServices);
         when(administrationService.getGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP)).thenReturn("");
 
         thrown.expect(CdssException.class);
@@ -85,13 +85,13 @@ public class CdsServiceValidatorTest {
         cdsServiceValidator.validate("medication-order-select");
     }
 
-    private Services getServices() {
-        Services services = new Services();
-        Service medicationOrderSelect = new Service();
+    private CDSServices getServices() {
+        CDSServices cdsServices = new CDSServices();
+        CDSService medicationOrderSelect = new CDSService();
         medicationOrderSelect.setId("medication-order-select");
-        Service drugDrugService = new Service();
-        drugDrugService.setId("drug-drug-service");
-        services.setServices(Arrays.asList(medicationOrderSelect, drugDrugService));
-        return services;
+        CDSService drugDrugCDSService = new CDSService();
+        drugDrugCDSService.setId("drug-drug-service");
+        cdsServices.setServices(Arrays.asList(medicationOrderSelect, drugDrugCDSService));
+        return cdsServices;
     }
 }

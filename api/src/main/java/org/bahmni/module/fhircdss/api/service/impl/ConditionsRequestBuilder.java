@@ -12,6 +12,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Condition;
+import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.openmrs.Concept;
@@ -25,6 +26,7 @@ import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -83,11 +85,15 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
                                   .filter(Objects::nonNull)
                                   .forEach(codedDiagnosisObs -> {
                                       Condition condition = new Condition();
-                                      Reference reference = new Reference();
-                                      reference.setReference("Patient/" + patient.getUuid());
+                                      Reference patientReference = new Reference();
+                                      Reference encounterReference = new Reference();
+                                      patientReference.setReference("Patient/" + patient.getUuid());
+                                      encounterReference.setReference("Encounter/" + codedDiagnosisObs.getEncounter().getUuid());
                                       CodeableConcept codeableConcept = conceptTranslator.toFhirResource(codedDiagnosisObs.getValueCoded());
+                                      condition.setOnset(new DateTimeType().setValue(codedDiagnosisObs.getObsDatetime()));
                                       condition.setCode(codeableConcept);
-                                      condition.setSubject(reference);
+                                      condition.setSubject(patientReference);
+                                      condition.setEncounter(encounterReference);
                                       addEntryToConditionsBundle(conditionsBundle, condition);
                                   });
     }
@@ -122,6 +128,7 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
             Condition conditionResource = (Condition) conditionEntry.getResource();
             Optional<Coding> clinicalStatusOptional = conditionResource.getClinicalStatus().getCoding().stream().filter(coding -> STATUS_ACTIVE.equals(coding.getDisplay())).findFirst();
             if (clinicalStatusOptional.isPresent()) {
+                conditionResource.setOnset(new DateTimeType().setValue(new Date()));
                 addEntryToConditionsBundle(conditionsBundle, conditionResource);
             }
         }

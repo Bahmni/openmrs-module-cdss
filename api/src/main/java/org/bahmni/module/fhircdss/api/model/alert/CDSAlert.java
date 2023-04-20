@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CDSCard {
+public class CDSAlert {
 
 	private String uuid;
 

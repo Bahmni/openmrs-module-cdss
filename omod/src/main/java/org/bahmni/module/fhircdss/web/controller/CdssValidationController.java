@@ -1,6 +1,6 @@
 package org.bahmni.module.fhircdss.web.controller;
 
-import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
+import org.bahmni.module.fhircdss.api.model.alert.CDSAlert;
 import org.bahmni.module.fhircdss.api.service.CdssOrderSelectService;
 import org.hl7.fhir.r4.model.Bundle;
 import org.openmrs.module.webservices.rest.web.RestConstants;
@@ -24,7 +24,7 @@ public class CdssValidationController extends BaseRestController {
 
     @PostMapping
     @ResponseBody
-    public List<CDSCard> validate(@RequestParam(value = "service") String serviceName, @RequestBody Bundle bundle) {
+    public List<CDSAlert> validate(@RequestParam(value = "service") String serviceName, @RequestBody Bundle bundle) {
         return orderSelectService.validateInteractions(serviceName, bundle);
     }
 

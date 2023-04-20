@@ -7,6 +7,6 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Services {
-    private List<Service> services;
+public class CDSServices {
+    private List<CDSService> services;
 }

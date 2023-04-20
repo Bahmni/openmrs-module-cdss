@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
+import org.openmrs.Encounter;
 import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.api.AdministrationService;
@@ -175,6 +176,9 @@ public class ConditionsRequestBuilderTest {
         ConceptName codedDiagnosisConceptName = new ConceptName(CODED_DIAGNOSIS, Locale.getDefault());
         codedDiagnosisConcept.setFullySpecifiedName(codedDiagnosisConceptName);
         codedDiagnosisObs.setConcept(codedDiagnosisConcept);
+        Encounter encounter = new Encounter();
+        encounter.setUuid("encounter-uuid");
+        codedDiagnosisObs.setEncounter(encounter);
         visitDiagnosisObs.addGroupMember(codedDiagnosisObs);
         return Collections.singletonList(visitDiagnosisObs);
     }

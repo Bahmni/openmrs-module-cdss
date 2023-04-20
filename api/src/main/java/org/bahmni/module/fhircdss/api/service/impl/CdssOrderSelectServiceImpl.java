@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
-import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
+import org.bahmni.module.fhircdss.api.model.alert.CDSAlert;
 import org.bahmni.module.fhircdss.api.model.request.CDSRequest;
 import org.bahmni.module.fhircdss.api.model.request.Prefetch;
 import org.bahmni.module.fhircdss.api.service.CdssOrderSelectService;
@@ -46,7 +46,7 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     private RestTemplate restTemplate;
 
     @Override
-    public List<CDSCard> validateInteractions(String serviceName, Bundle bundle) {
+    public List<CDSAlert> validateInteractions(String serviceName, Bundle bundle) {
         cdsServiceValidator.validate(serviceName);
         bundleRequestValidator.validate(bundle);
 
@@ -61,12 +61,12 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
         return checkForContraindications(serviceName, cdsRequest);
     }
 
-    private List<CDSCard> checkForContraindications(String serviceName, CDSRequest cdsRequest) {
+    private List<CDSAlert> checkForContraindications(String serviceName, CDSRequest cdsRequest) {
         String cdssEndPoint = getCdssGlobalProperty(CDSS_SERVER_BASE_URL_GLOBAL_PROP) + "/" + serviceName;
         ResponseEntity<Map> responseEntityMap = restTemplate.postForEntity(cdssEndPoint, getEntityRequest(cdsRequest), java.util.Map.class);
         if (responseEntityMap.getStatusCode().is2xxSuccessful()) {
-            Map<String, List<CDSCard>> cards = responseEntityMap.getBody();
-            return Optional.of(cards.get("cards")).orElseThrow(CdssException::new);
+            Map<String, List<CDSAlert>> alerts = responseEntityMap.getBody();
+            return Optional.of(alerts.get("cards")).orElseThrow(CdssException::new);
         } else {
             logger.error("Call to CDS server failed with response status code = " + responseEntityMap.getStatusCode().value());
             throw new CdssException();

@@ -4,7 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
-import org.bahmni.module.fhircdss.api.model.alert.CDSCard;
+import org.bahmni.module.fhircdss.api.model.alert.CDSAlert;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
 import org.bahmni.module.fhircdss.api.validator.CdsServiceValidator;
 import org.hl7.fhir.r4.model.Bundle;
@@ -95,12 +95,12 @@ public class CdssOrderSelectServiceImplTest {
         when(medicationRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(restTemplate.postForEntity(anyString(), any(), refEq(java.util.Map.class))).thenReturn(getResponse());
 
-        List<CDSCard> cdsCards = cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle);
+        List<CDSAlert> cdsAlerts = cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle);
 
         verify(patientRequestBuilder, times(1)).build(mockRequestBundle);
         verify(conditionsRequestBuilder, times(1)).build(mockRequestBundle);
         verify(medicationRequestBuilder, times(1)).build(mockRequestBundle);
-        assertEquals(1, cdsCards.size());
+        assertEquals(1, cdsAlerts.size());
     }
 
     private Bundle getMockRequestBundle() throws Exception {
@@ -114,13 +114,13 @@ public class CdssOrderSelectServiceImplTest {
         Path path = Paths.get(getClass().getClassLoader()
                 .getResource("response_warning.json").toURI());
         String responseStr = Files.lines(path, StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
-        Map<String, List<CDSCard>> cards = null;
+        Map<String, List<CDSAlert>> alerts = null;
         try {
-            cards = new ObjectMapper().readValue(responseStr, java.util.Map.class);
+            alerts = new ObjectMapper().readValue(responseStr, java.util.Map.class);
         } catch (JsonProcessingException e) {
             throw new CdssException(e);
         }
-        ResponseEntity<Map> responseEntityMap = new ResponseEntity<>(cards, HttpStatus.OK);
+        ResponseEntity<Map> responseEntityMap = new ResponseEntity<>(alerts, HttpStatus.OK);
         return responseEntityMap;
     }
 }

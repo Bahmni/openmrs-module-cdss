@@ -26,8 +26,12 @@ public class CdssUtils {
 
     public static IParser getFhirJsonParser() {
         if (parser == null) {
-            parser = FhirContext.forR4().newJsonParser();
-            parser.setPrettyPrint(true);
+            synchronized (CdssUtils.class) {
+                if (parser == null) {
+                    parser = FhirContext.forR4().newJsonParser();
+                    parser.setPrettyPrint(true);
+                }
+            }
         }
         return parser;
     }

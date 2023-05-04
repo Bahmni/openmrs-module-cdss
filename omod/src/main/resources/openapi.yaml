@@ -1,0 +1,149 @@
+openapi: 3.0.3
+info:
+  title: CDSS Module - OpenAPI 3.0
+  description: |-
+    This is a CDSS Module based on the OpenAPI 3.0 specification.
+
+    Some useful links:
+    - [CDSS Module repository](https://github.com/Bahmni/openmrs-module-cdss)
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: bahmnicommunity@gmail.com
+  license:
+    name: GNU AFFERO GENERAL PUBLIC LICENSE
+    url: https://www.gnu.org/licenses/agpl-3.0.en.html
+  version: 1.0.0-SNAPSHOT
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://dev.snomed.mybahmni.in/openmrs/ws/rest/v1
+paths:
+  /cdss:
+    post:
+      tags:
+        - Drug Diagnosis Interaction
+      summary: Drug Diagnosis Interaction
+      description: Drug Diagnosis Interaction based on termninology codes
+      operationId: drugDiagnosisInteraction
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - name: service
+          in: query
+          description: available services in CDSS Engine
+          required: true
+          explode: true
+          schema:
+            type: string
+            default: medication-order-select
+            enum:
+              - medication-order-select
+              - drug-drug-validation
+      requestBody:
+        description: drug diagnosis interaction
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bundle'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alerts'
+        '400':
+          description: Invalid Bundle Provided
+        '404':
+          description: Service not found
+        '405':
+          description: Validation exception
+components:
+  schemas:
+    Bundle:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          example: Bundle
+        id:
+          type: string
+          example: some id
+        type:
+          type: string
+          example: collection
+        entry:
+          type: array
+          items:
+            type: object
+            properties:
+              resource:
+                type: object
+                properties:
+                  resourceType:
+                    type: string
+                    example: MedicationRequest
+                  status:
+                    type: string
+                    example: active
+                  intent:
+                    type: string
+                    example: proposal
+                  subject:
+                    type: object
+                    properties:
+                      reference:
+                        type: string
+                        example: Patient/dc9444c6-ad55-4200-b6e9-407e025eb948
+                  medicationCodeableConcept:
+                    type: object
+                    properties:
+                      coding:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            system:
+                              type: string
+                              example: http://dummySystem.info/code
+                            code:
+                              type: string
+                              example: 123456
+                            display:
+                              type: string
+                              example: Acetazolamide 250 mg
+                      text:
+                        type: string
+                        example: Acetazolamide 250 mg
+    Alerts:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: f413b647-e149-47ae-a5c1-aa75f2c8ee9b
+        indicator:
+          type: string
+          example: critical
+        summary:
+          type: string
+          example: Contraindication - Acetazolamide 250 mg and Acetazolamide 250 mg with patient condition Hyperchloremic acidosis.
+        detail:
+          type: string
+          example: The use of Acetazolamide is contraindicated when the patient has Hyperchloremic acidosis.
+        source:
+          type: object
+          properties:
+            label:
+              type: string
+              example: Wikipedia
+            url:
+              type: string
+              example: https://en.wikipedia.org/wiki/Acetazolamide#Contraindications
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+security:
+  - basicAuth: []

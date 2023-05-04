@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//OpenMRS//DTD OpenMRS Config 1.0//EN" "http://resources.openmrs.org/doctype/config-1.6.dtd">
+
+<module configVersion="1.6">
+	<id>${project.parent.artifactId}</id>
+	<name>${project.parent.name}</name>
+	<version>${project.parent.version}</version>
+	<package>org.bahmni.module.fhircdss</package>
+	<author>Bahmni</author>
+	<description>OpenMRS Module to integrate Fhir CDSS with Bahmni</description>
+
+	<activator>org.bahmni.module.fhircdss.CdssActivator</activator>
+
+	<require_version>${openmrsPlatformVersion}</require_version>
+
+	<require_modules>
+		<require_module>org.openmrs.module.webservices.rest</require_module>
+		<require_module>org.openmrs.module.fhir2</require_module>
+	</require_modules>
+
+	<privilege>
+		<name>Execute CDSS</name>
+		<description>Ability to run CDSS rules</description>
+	</privilege>
+
+	<globalProperty>
+		<property>cdss.enable</property>
+		<defaultValue>false</defaultValue>
+		<description>Property used to determine whether CDSS being used or not</description>
+	</globalProperty>
+
+	<globalProperty>
+		<property>cdss.fhir.baseurl</property>
+		<defaultValue>http://localhost</defaultValue>
+		<description>Base URL of the CDSS server</description>
+	</globalProperty>
+
+	<messages>
+		<lang>en</lang>
+		<file>messages.properties</file>
+	</messages>
+	<messages>
+		<lang>fr</lang>
+		<file>messages_fr.properties</file>
+	</messages>
+	<messages>
+		<lang>es</lang>
+		<file>messages_es.properties</file>
+	</messages>
+</module>
+

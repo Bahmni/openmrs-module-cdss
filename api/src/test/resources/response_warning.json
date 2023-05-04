@@ -1,0 +1,14 @@
+{
+  "cards": [
+    {
+      "uuid": "7b544b67-fbc7-48af-af95-ddaee09e836b",
+      "indicator": "warning",
+      "summary": "Contraindication: \"Atorvastatin-containing product\" with patient condition \"Steatosis of liver\".",
+      "detail": "The use of Atorvastatin is contraindicated when the patient has Disease of liver.",
+      "source": {
+        "label": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Atorvastatin#Contraindications"
+      }
+    }
+  ]
+}

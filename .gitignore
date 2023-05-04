@@ -1,0 +1,36 @@
+/omod/target/
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+/api/target/
+omod/.DS_Store
+
+#IntelliJ Idea
+*.iml
+*.ipr
+*.iws
+.idea/
+
+#Eclipse
+.pydevproject
+.project
+.metadata
+bin/*
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/
+.loadpath
+
+#Java
+*.class

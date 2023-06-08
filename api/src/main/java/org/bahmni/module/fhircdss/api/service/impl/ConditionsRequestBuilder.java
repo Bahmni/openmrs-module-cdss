@@ -21,6 +21,7 @@ import org.openmrs.Patient;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.ObsService;
 import org.openmrs.api.PatientService;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.api.FhirConditionService;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +91,7 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
                                       patientReference.setReference("Patient/" + patient.getUuid());
                                       encounterReference.setReference("Encounter/" + codedDiagnosisObs.getEncounter().getUuid());
                                       CodeableConcept codeableConcept = conceptTranslator.toFhirResource(codedDiagnosisObs.getValueCoded());
+                                      updateCodeableConceptName(codedDiagnosisObs.getValueCoded(), codeableConcept);
                                       condition.setOnset(new DateTimeType().setValue(codedDiagnosisObs.getObsDatetime()));
                                       condition.setCode(codeableConcept);
                                       condition.setSubject(patientReference);
@@ -136,6 +138,7 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
 
     private void addEntryToConditionsBundle(Bundle conditionsBundle, Condition conditionEntry) {
         Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
+        updateConditionDisplayNameToShortName(conditionEntry);
         bundleEntryComponent.setResource(conditionEntry);
         conditionsBundle.addEntry(bundleEntryComponent);
     }
@@ -158,5 +161,23 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
             return optionalObs.get();
         }
         return null;
+    }
+
+    private void updateConditionDisplayNameToShortName(Condition conditionEntry) {
+        Optional<Coding> optionalCoding = conditionEntry.getCode().getCoding().stream().filter(coding -> coding.getSystem() == null && coding.getCode() != null).findFirst();
+        if (optionalCoding.isPresent()) {
+            Coding coding = optionalCoding.get();
+            String conceptUuid = coding.getCode();
+            Concept conditionConcept = conceptService.getConceptByUuid(conceptUuid);
+            updateCodeableConceptName(conditionConcept, conditionEntry.getCode());
+        }
+    }
+
+    private void updateCodeableConceptName(Concept openmrsConcept, CodeableConcept codeableConcept) {
+        if (openmrsConcept.getShortNameInLocale(Context.getLocale()) != null) {
+            String shortName = openmrsConcept.getShortNameInLocale(Context.getLocale()).getName();
+            codeableConcept.setText(shortName);
+            codeableConcept.getCoding().stream().forEach(coding -> coding.setDisplay(shortName));
+        }
     }
 }

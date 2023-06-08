@@ -91,6 +91,7 @@ public class ConditionsRequestBuilderTest {
         PowerMockito.mockStatic(LocaleUtility.class);
         when(Context.getAdministrationService()).thenReturn(administrationService);
         when(LocaleUtility.getLocalesInOrder()).thenReturn(Collections.singleton(Locale.getDefault()));
+        when(Context.getLocale()).thenReturn(Locale.getDefault());
     }
 
     @Test
@@ -99,16 +100,18 @@ public class ConditionsRequestBuilderTest {
         Patient patient = new Patient();
         patient.setUuid(PATIENT_UUID);
         IBundleProvider iBundleProvider = new SimpleBundleProvider();
-        List<Obs> visitDiagnosesObs = getVisitDiagnosesObs();
+        List<Obs> visitDiagnosesObs = getVisitDiagnosesObs(false);
 
         when(patientService.getPatientByUuid(anyString())).thenReturn(patient);
         when(fhirConditionService.searchConditions(any(), any(), any(), any(), any(), any(), any(), any(), any(),any())).thenReturn(iBundleProvider);
         when(obsService.getObservationsByPersonAndConcept(any(), any())).thenReturn(visitDiagnosesObs);
+        when(conceptTranslator.toFhirResource(any())).thenReturn(getCodeableConcept());
 
         Bundle conditionBundle = conditionsRequestBuilder.build(mockRequestBundle);
 
         List<Bundle.BundleEntryComponent> resultConditionEntries = conditionBundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         assertEquals(2, resultConditionEntries.size());
+        assertEquals("Malaria (disorder)", ((Condition)resultConditionEntries.get(0).getResource()).getCode().getText());
     }
 
     @Test
@@ -156,6 +159,26 @@ public class ConditionsRequestBuilderTest {
         assertEquals(1, resultConditionEntries.size());
     }
 
+    @Test
+    public void shouldIncludeActiveDiagnosesAndRenameDiagnosisNameToShortName_whenPatientHasOneSavedActiveDiagnosis_oneDraftActiveDiagnosis() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle();
+        Patient patient = new Patient();
+        patient.setUuid(PATIENT_UUID);
+        IBundleProvider iBundleProvider = new SimpleBundleProvider();
+        List<Obs> visitDiagnosesObs = getVisitDiagnosesObs(true);
+
+        when(patientService.getPatientByUuid(anyString())).thenReturn(patient);
+        when(fhirConditionService.searchConditions(any(), any(), any(), any(), any(), any(), any(), any(), any(),any())).thenReturn(iBundleProvider);
+        when(obsService.getObservationsByPersonAndConcept(any(), any())).thenReturn(visitDiagnosesObs);
+        when(conceptTranslator.toFhirResource(any())).thenReturn(getCodeableConcept());
+
+        Bundle conditionBundle = conditionsRequestBuilder.build(mockRequestBundle);
+
+        List<Bundle.BundleEntryComponent> resultConditionEntries = conditionBundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        assertEquals(2, resultConditionEntries.size());
+        assertEquals("Malaria", ((Condition)resultConditionEntries.get(0).getResource()).getCode().getText());
+    }
+
     private Bundle getMockRequestBundle() throws Exception {
         Path path = Paths.get(getClass().getClassLoader()
                 .getResource("request_bundle.json").toURI());
@@ -163,13 +186,17 @@ public class ConditionsRequestBuilderTest {
         return FhirContext.forR4().newJsonParser().parseResource(Bundle.class, mockStr);
     }
 
-    private List<Obs> getVisitDiagnosesObs() {
+    private List<Obs> getVisitDiagnosesObs(boolean shortNameNeeded) {
         Obs visitDiagnosisObs = new Obs(1);
 
         Obs codedDiagnosisObs = new Obs(2);
         Concept malariaConcept = new Concept(1);
-        ConceptName malariaConceptName = new ConceptName("Malaria", Locale.getDefault());
-        malariaConcept.setFullySpecifiedName(malariaConceptName);
+        ConceptName malariaConceptFQN = new ConceptName("Malaria (disorder)", Locale.getDefault());
+        malariaConcept.setFullySpecifiedName(malariaConceptFQN);
+        if (shortNameNeeded) {
+            ConceptName malariaConceptShortName = new ConceptName("Malaria", Locale.getDefault());
+            malariaConcept.setShortName(malariaConceptShortName);
+        }
         codedDiagnosisObs.setValueCoded(malariaConcept);
 
         Concept codedDiagnosisConcept = new Concept(2);
@@ -184,7 +211,7 @@ public class ConditionsRequestBuilderTest {
     }
 
     private List<Obs> getInactiveVisitDiagnosesObs() {
-        List<Obs> visitDiagnosesObs = getVisitDiagnosesObs();
+        List<Obs> visitDiagnosesObs = getVisitDiagnosesObs(false);
 
         Obs codedDiagnosisStatusObs = new Obs(5);
         Concept codedDiagnosisStatusConcept = new Concept(5);
@@ -197,5 +224,11 @@ public class ConditionsRequestBuilderTest {
         visitDiagnosesObs.get(0).addGroupMember(codedDiagnosisStatusObs);
 
         return visitDiagnosesObs;
+    }
+
+    private CodeableConcept getCodeableConcept() {
+        CodeableConcept codeableConcept = new CodeableConcept();
+        codeableConcept.setText("Malaria (disorder)");
+        return codeableConcept;
     }
 }

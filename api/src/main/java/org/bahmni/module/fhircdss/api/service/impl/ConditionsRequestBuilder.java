@@ -33,6 +33,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CODING_SYSTEM_FOR_OPENMRS_CONCEPT;
+
 @Component
 public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
 
@@ -92,6 +94,7 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
                                       encounterReference.setReference("Encounter/" + codedDiagnosisObs.getEncounter().getUuid());
                                       CodeableConcept codeableConcept = conceptTranslator.toFhirResource(codedDiagnosisObs.getValueCoded());
                                       updateCodeableConceptName(codedDiagnosisObs.getValueCoded(), codeableConcept);
+                                      updateCodingSystemNameForConcept(codedDiagnosisObs.getValueCoded(), codeableConcept);
                                       condition.setOnset(new DateTimeType().setValue(codedDiagnosisObs.getObsDatetime()));
                                       condition.setCode(codeableConcept);
                                       condition.setSubject(patientReference);
@@ -115,7 +118,7 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
 
         for (IBaseResource conditionBaseResource : iBundleProvider.getAllResources()) {
             Condition fhirCondition = parser.parseResource(Condition.class, parser.encodeResourceToString(conditionBaseResource));
-            Optional<Coding> clinicalStatusOptional = fhirCondition.getClinicalStatus().getCoding().stream().filter(coding -> STATUS_ACTIVE.equalsIgnoreCase(coding.getDisplay())).findFirst();
+            Optional<Coding> clinicalStatusOptional = fhirCondition.getClinicalStatus().getCoding().stream().filter(coding -> STATUS_ACTIVE.equalsIgnoreCase(coding.getDisplay()) || STATUS_ACTIVE.equalsIgnoreCase(coding.getCode())).findFirst();
             if (clinicalStatusOptional.isPresent()) {
                 addEntryToConditionsBundle(conditionsBundle, fhirCondition);
             }
@@ -128,7 +131,7 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
 
         for (Bundle.BundleEntryComponent conditionEntry : conditionEntries) {
             Condition conditionResource = (Condition) conditionEntry.getResource();
-            Optional<Coding> clinicalStatusOptional = conditionResource.getClinicalStatus().getCoding().stream().filter(coding -> STATUS_ACTIVE.equals(coding.getDisplay())).findFirst();
+            Optional<Coding> clinicalStatusOptional = conditionResource.getClinicalStatus().getCoding().stream().filter(coding -> STATUS_ACTIVE.equalsIgnoreCase(coding.getDisplay()) || STATUS_ACTIVE.equalsIgnoreCase(coding.getCode())).findFirst();
             if (clinicalStatusOptional.isPresent()) {
                 conditionResource.setOnset(new DateTimeType().setValue(new Date()));
                 addEntryToConditionsBundle(conditionsBundle, conditionResource);
@@ -138,7 +141,11 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
 
     private void addEntryToConditionsBundle(Bundle conditionsBundle, Condition conditionEntry) {
         Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent();
-        updateConditionDisplayNameToShortName(conditionEntry);
+        Concept conditionConcept = getConceptFromConditionEntry(conditionEntry);
+        if (conditionConcept != null) {
+            updateCodeableConceptName(conditionConcept, conditionEntry.getCode());
+            updateCodingSystemNameForConcept(conditionConcept, conditionEntry.getCode());
+        }
         bundleEntryComponent.setResource(conditionEntry);
         conditionsBundle.addEntry(bundleEntryComponent);
     }
@@ -163,21 +170,29 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
         return null;
     }
 
-    private void updateConditionDisplayNameToShortName(Condition conditionEntry) {
-        Optional<Coding> optionalCoding = conditionEntry.getCode().getCoding().stream().filter(coding -> coding.getSystem() == null && coding.getCode() != null).findFirst();
-        if (optionalCoding.isPresent()) {
-            Coding coding = optionalCoding.get();
-            String conceptUuid = coding.getCode();
-            Concept conditionConcept = conceptService.getConceptByUuid(conceptUuid);
-            updateCodeableConceptName(conditionConcept, conditionEntry.getCode());
-        }
-    }
-
     private void updateCodeableConceptName(Concept openmrsConcept, CodeableConcept codeableConcept) {
         if (openmrsConcept.getShortNameInLocale(Context.getLocale()) != null) {
             String shortName = openmrsConcept.getShortNameInLocale(Context.getLocale()).getName();
             codeableConcept.setText(shortName);
             codeableConcept.getCoding().stream().forEach(coding -> coding.setDisplay(shortName));
+        }
+    }
+
+    private Concept getConceptFromConditionEntry(Condition conditionEntry) {
+        Optional<Coding> optionalCoding = conditionEntry.getCode().getCoding().stream().filter(coding -> coding.getSystem() == null && coding.getCode() != null).findFirst();
+        if (optionalCoding.isPresent()) {
+            Coding coding = optionalCoding.get();
+            String conceptUuid = coding.getCode();
+            return conceptService.getConceptByUuid(conceptUuid);
+        }
+        return null;
+    }
+
+    private void updateCodingSystemNameForConcept(Concept openmrsConcept, CodeableConcept codeableConcept) {
+        Optional<Coding> optionalCoding = codeableConcept.getCoding().stream().filter(coding -> coding.getSystem() == null && openmrsConcept.getUuid().equals(coding.getCode())).findFirst();
+        if (optionalCoding.isPresent()) {
+            Coding coding = optionalCoding.get();
+            coding.setSystem(CODING_SYSTEM_FOR_OPENMRS_CONCEPT);
         }
     }
 }

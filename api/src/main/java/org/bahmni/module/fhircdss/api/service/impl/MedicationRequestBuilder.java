@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CODING_SYSTEM_FOR_OPENMRS_CONCEPT;
+
 @Component
 public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
 
@@ -81,6 +83,12 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
             });
             codeableConcept.setText(drug.getDisplayName());
         }
+
+        Coding bahmniCoding = new Coding();
+        bahmniCoding.setCode(drug.getUuid());
+        bahmniCoding.setDisplay(drug.getDisplayName());
+        bahmniCoding.setSystem(CODING_SYSTEM_FOR_OPENMRS_CONCEPT);
+        codeableConcept.addCoding(bahmniCoding);
 
         return codeableConcept;
     }

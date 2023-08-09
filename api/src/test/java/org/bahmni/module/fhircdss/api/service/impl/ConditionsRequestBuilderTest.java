@@ -44,6 +44,7 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CODING_SYSTEM_FOR_OPENMRS_CONCEPT;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -115,7 +116,7 @@ public class ConditionsRequestBuilderTest {
     }
 
     @Test
-    public void shouldIncludeActiveConditions_whenPatientHasOneSavedActiveCondition_oneDraftActiveCondition() throws Exception {
+    public void shouldIncludeActiveConditionsAndIncludeCodingSystemForBahmni_whenPatientHasOneSavedActiveCondition_oneDraftActiveCondition() throws Exception {
         Bundle mockRequestBundle = getMockRequestBundle();
         Patient patient = new Patient();
         patient.setUuid(PATIENT_UUID);
@@ -124,6 +125,7 @@ public class ConditionsRequestBuilderTest {
         CodeableConcept activeClinicalStatus = new CodeableConcept();
         activeClinicalStatus.setCoding(Collections.singletonList(new Coding("dummy", "active", "active")));
         activeConditionResource.setClinicalStatus(activeClinicalStatus);
+        activeConditionResource.getCode().addCoding(new Coding(null, "74827482-4ff0-0305-1990-000000000001", "Malaria"));
         Condition inactiveConditionResource = new Condition();
         CodeableConcept inactiveClinicalStatus = new CodeableConcept();
         inactiveClinicalStatus.setCoding(Collections.singletonList(new Coding("dummy", "history", "history")));
@@ -134,11 +136,13 @@ public class ConditionsRequestBuilderTest {
         when(patientService.getPatientByUuid(anyString())).thenReturn(patient);
         when(fhirConditionService.searchConditions(any(), any(), any(), any(), any(), any(), any(), any(), any(),any())).thenReturn(iBundleProvider);
         when(obsService.getObservationsByPersonAndConcept(any(), any())).thenReturn(Collections.EMPTY_LIST);
+        when(conceptService.getConceptByUuid("74827482-4ff0-0305-1990-000000000001")).thenReturn(getMockConcept());
 
         Bundle conditionBundle = conditionsRequestBuilder.build(mockRequestBundle);
 
         List<Bundle.BundleEntryComponent> resultConditionEntries = conditionBundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         assertEquals(2, resultConditionEntries.size());
+        assertEquals(CODING_SYSTEM_FOR_OPENMRS_CONCEPT, ((Condition)resultConditionEntries.get(0).getResource()).getCode().getCoding().get(0).getSystem());
     }
 
     @Test
@@ -230,5 +234,15 @@ public class ConditionsRequestBuilderTest {
         CodeableConcept codeableConcept = new CodeableConcept();
         codeableConcept.setText("Malaria (disorder)");
         return codeableConcept;
+    }
+
+    private Concept getMockConcept() {
+        Concept malariaConcept = new Concept(1);
+        ConceptName malariaConceptFQN = new ConceptName("Malaria (disorder)", Locale.getDefault());
+        malariaConcept.setFullySpecifiedName(malariaConceptFQN);
+        ConceptName malariaConceptShortName = new ConceptName("Malaria", Locale.getDefault());
+        malariaConcept.setShortName(malariaConceptShortName);
+        malariaConcept.setUuid("74827482-4ff0-0305-1990-000000000001");
+        return malariaConcept;
     }
 }

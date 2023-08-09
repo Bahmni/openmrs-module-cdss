@@ -9,6 +9,8 @@ import java.util.List;
 public interface CdssOrderSelectService {
     public static final String CDSS_SERVER_BASE_URL_GLOBAL_PROP = "cdss.fhir.baseurl";
 
+    String CODING_SYSTEM_FOR_OPENMRS_CONCEPT = "https://fhir.openmrs.org";
+
     @Authorized("Execute CDSS")
     List<CDSAlert> validateInteractions(String serviceName, Bundle bundle);
 }

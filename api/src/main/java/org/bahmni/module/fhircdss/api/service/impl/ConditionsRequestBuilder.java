@@ -68,7 +68,7 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
     @Override
     public Bundle build(Bundle inputBundle) {
         Bundle conditionsBundle = new Bundle();
-        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(inputBundle);
+        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestOrConditionEntry(inputBundle);
 
         addExistingActiveDiagnoses(conditionsBundle, patientUuid);
         addExistingActiveConditions(conditionsBundle, patientUuid);

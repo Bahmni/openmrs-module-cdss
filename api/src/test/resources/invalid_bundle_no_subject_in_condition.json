@@ -1,0 +1,36 @@
+{
+  "resourceType": "Bundle",
+  "id": "some id",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "27cb23a4-2c6d-4d6d-b6c3-08039f73841f",
+        "code": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "1234",
+              "display": "Malaria"
+            }
+          ],
+          "text": "Malaria"
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "history-of",
+              "display": "History Of"
+            }
+          ]
+        },
+        "onsetDateTime": "2023-03-12T11:40:00.000Z",
+        "asserter": {
+          "display": "Super Man (superman)"
+        }
+      }
+    }
+  ]
+}

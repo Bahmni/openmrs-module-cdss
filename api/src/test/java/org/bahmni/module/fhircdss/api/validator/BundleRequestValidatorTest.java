@@ -29,10 +29,10 @@ public class BundleRequestValidatorTest {
     }
 
     @Test
-    public void shouldFailWhenDraftMedicationIsMissing() throws Exception {
-        Bundle mockRequestBundle = getMockBundle("invalid_bundle_no_medication.json");
+    public void shouldFailWhenDraftMedicationOrConditionIsMissing() throws Exception {
+        Bundle mockRequestBundle = getMockBundle("invalid_bundle_no_medication_no_condition.json");
         thrown.expect(CdssException.class);
-        thrown.expectMessage("There are no medication orders in the request");
+        thrown.expectMessage("There are no medication orders or conditions in the request");
 
         bundleRequestValidator.validate(mockRequestBundle);
     }
@@ -42,6 +42,15 @@ public class BundleRequestValidatorTest {
         Bundle mockBundle = getMockBundle("invalid_bundle_no_subject.json");
         thrown.expect(CdssException.class);
         thrown.expectMessage("Subject missing in medication orders in the bundle");
+
+        bundleRequestValidator.validate(mockBundle);
+    }
+
+    @Test
+    public void shouldFailWhenPatientReferenceIsMissingInDraftCondition() throws Exception {
+        Bundle mockBundle = getMockBundle("invalid_bundle_no_subject_in_condition.json");
+        thrown.expect(CdssException.class);
+        thrown.expectMessage("Subject missing in condition entry in the bundle");
 
         bundleRequestValidator.validate(mockBundle);
     }

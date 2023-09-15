@@ -20,7 +20,7 @@ public class PatientRequestBuilder implements RequestBuilder<Patient> {
 
     @Override
     public Patient build(Bundle inputBundle) {
-        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestEntry(inputBundle);
+        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestOrConditionEntry(inputBundle);
         return fhirPatientService.get(patientUuid);
     }
 }

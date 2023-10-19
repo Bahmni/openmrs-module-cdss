@@ -132,7 +132,7 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         return frequencyObject;
     }
 
-    private static void resolveFhirDosageFrequency(Dosage dosage, Frequency frequency) {
+    private  void resolveFhirDosageFrequency(Dosage dosage, Frequency frequency) {
         dosage.getTiming().getRepeat().setFrequency(frequency.getFrequencyCount());
         dosage.getTiming().getRepeat().setPeriod(frequency.getPeriodCount());
         dosage.getTiming().getRepeat().setPeriodUnit(Timing.UnitsOfTime.fromCode(frequency.getPeriodUnit()));

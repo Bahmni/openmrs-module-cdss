@@ -130,7 +130,7 @@ public class MedicationRequestBuilderTest {
         assertEquals("Capsule", finalDoseUnit3);
         assertEquals("Capsule(s)",initialDoseUnit3);
 
-        assertEquals("Puff", finalDoseUnit4);
+        assertEquals("Actuation", finalDoseUnit4);
         assertEquals("Puff(s)",initialDoseUnit4);
 
         assertEquals("Drop", finalDoseUnit5);

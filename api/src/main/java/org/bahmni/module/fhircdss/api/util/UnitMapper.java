@@ -10,7 +10,7 @@ public enum UnitMapper {
     UL_UL("ul", "uL"),
     TABLET_TABLET("Tablet(s)", "Tablet"),
     CAPSULE_CAPSULE("Capsule(s)", "Capsule"),
-    PUFF_PUFF("Puff(s)", "Puff"),
+    PUFF_PUFF("Puff(s)", "Actuation"),
     DROP_DROP("Drop", "Drop"),
     TABLESPOON_SPOONFUL("Tablespoon", "Spoonful"),
     TEASPOON("Teaspoon", "Spoonful"),

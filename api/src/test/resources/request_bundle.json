@@ -85,7 +85,31 @@
             }
           ],
           "text": "Atorvastatin 20 mg"
-        }
+        },
+        "dosageInstruction": [ {
+          "text": "{\"instructions\":\"As directed\"}",
+          "timing": {
+            "event": [ "2023-09-06T07:29:05+00:00" ],
+            "repeat": {
+
+            },
+            "code": {
+              "coding": [ {
+                "code": "9d83d5f2-3f10-11e4-adec-0800271c1b75",
+                "display": "Twice a day"
+              } ],
+              "text": "Twice a day"
+            }
+          },
+          "asNeededBoolean": false,
+          "doseAndRate": [ {
+            "doseQuantity": {
+              "value": 55.0,
+              "unit": "ml",
+              "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
+            }
+          } ]
+        } ]
       }
     }
   ]

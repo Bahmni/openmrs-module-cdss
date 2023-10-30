@@ -1,11 +1,13 @@
 package org.bahmni.module.fhircdss.api.validator;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.MedicationRequest;
+import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.springframework.stereotype.Component;
@@ -21,10 +23,11 @@ public class BundleRequestValidator {
     public void validate(Bundle bundle) {
         List<Bundle.BundleEntryComponent> medicationEntries = bundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         List<Bundle.BundleEntryComponent> conditionEntries = bundle.getEntry().stream().filter(entry -> ResourceType.Condition.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        List<Bundle.BundleEntryComponent> patientEntries = bundle.getEntry().stream().filter(entry -> ResourceType.Patient.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
 
-        if (medicationEntries.isEmpty() && conditionEntries.isEmpty()) {
-            log.error("There are no medication orders or conditions in the request");
-            throw new CdssException("There are no medication orders or conditions in the request");
+        if (medicationEntries.isEmpty() && conditionEntries.isEmpty() && patientEntries.isEmpty()) {
+            log.error("There are no medication orders or conditions or patient in the request");
+            throw new CdssException("There are no medication orders or conditions or patient in the request");
         }
 
         for (Bundle.BundleEntryComponent medicationEntry : medicationEntries) {
@@ -42,6 +45,15 @@ public class BundleRequestValidator {
             if (!ResourceType.Patient.toString().equals(subject.getReferenceElement().getResourceType())) {
                 log.error("Subject missing in condition entry in the bundle");
                 throw new CdssException("Subject missing in condition entry in the bundle");
+            }
+        }
+
+        for (Bundle.BundleEntryComponent patientEntry : patientEntries) {
+            Patient patientResource = (Patient) patientEntry.getResource();
+            String patientResourceId = patientResource.getId();
+            if (StringUtils.isBlank(patientResourceId)) {
+                log.error("patient id missing in patient entry in the bundle");
+                throw new CdssException("patient id missing in patient entry in the bundle");
             }
         }
     }

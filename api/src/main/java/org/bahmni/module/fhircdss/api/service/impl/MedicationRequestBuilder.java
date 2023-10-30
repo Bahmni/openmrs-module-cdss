@@ -62,7 +62,7 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
     }
 
     private Bundle addExistingActiveMedications(Bundle inputBundle, Bundle medicationBundle) {
-        String patientUuid = CdssUtils.getPatientUuidFromMedicationRequestOrConditionEntryOrPatientEntry(inputBundle);
+        String patientUuid = CdssUtils.getPatientUuidFromRequest(inputBundle);
         List<Order> activeOrders = getActiveOrders(patientUuid);
         for (Order order : activeOrders) {
             MedicationRequest medicationRequest = fhirMedicationRequestService.get(order.getUuid());

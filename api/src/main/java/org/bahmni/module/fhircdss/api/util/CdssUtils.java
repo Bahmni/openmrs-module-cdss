@@ -19,7 +19,7 @@ public class CdssUtils {
 
     private static IParser parser = null;
 
-    public static String getPatientUuidFromMedicationRequestOrConditionEntryOrPatientEntry(Bundle bundle) {
+    public static String getPatientUuidFromRequest(Bundle bundle) {
         List<Bundle.BundleEntryComponent> medicationEntries = bundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         Reference subject = null;
         if (!medicationEntries.isEmpty()) {

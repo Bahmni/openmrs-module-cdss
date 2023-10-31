@@ -171,11 +171,14 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
     }
 
     private void updateCodeableConceptName(Concept openmrsConcept, CodeableConcept codeableConcept) {
+        String name;
         if (openmrsConcept.getShortNameInLocale(Context.getLocale()) != null) {
-            String shortName = openmrsConcept.getShortNameInLocale(Context.getLocale()).getName();
-            codeableConcept.setText(shortName);
-            codeableConcept.getCoding().stream().forEach(coding -> coding.setDisplay(shortName));
+            name = openmrsConcept.getShortNameInLocale(Context.getLocale()).getName();
+        } else {
+            name = openmrsConcept.getFullySpecifiedName(Context.getLocale()).getName();
         }
+        codeableConcept.setText(name);
+        codeableConcept.getCoding().stream().forEach(coding -> coding.setDisplay(name));
     }
 
     private Concept getConceptFromConditionEntry(Condition conditionEntry) {

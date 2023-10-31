@@ -1,0 +1,12 @@
+{
+  "resourceType": "Bundle",
+  "id": "some id",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient"
+      }
+    }
+  ]
+}

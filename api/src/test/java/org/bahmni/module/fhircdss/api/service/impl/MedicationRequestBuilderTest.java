@@ -102,6 +102,8 @@ public class MedicationRequestBuilderTest {
         String initialDoseUnit6 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(5));
         String initialDoseUnit7 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(6));
         String initialDoseUnit8 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(7));
+        String initialDoseUnit9 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(8));
+        String initialDoseUnit10 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(9));
 
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
         Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
@@ -109,8 +111,8 @@ public class MedicationRequestBuilderTest {
         List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         List<Bundle.BundleEntryComponent> inputMedicationEntries = mockRequestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
 
-        assertEquals(8, inputMedicationEntries.size());
-        assertEquals(8, resultMedicationEntries.size());
+        assertEquals(10, inputMedicationEntries.size());
+        assertEquals(10, resultMedicationEntries.size());
         
         String finalDoseUnit1 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(0));
         String finalDoseUnit2 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(1));
@@ -120,6 +122,8 @@ public class MedicationRequestBuilderTest {
         String finalDoseUnit6 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(5));
         String finalDoseUnit7 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(6));
         String finalDoseUnit8 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(7));
+        String finalDoseUnit9 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(8));
+        String finalDoseUnit10 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(9));
 
         assertEquals("mL", finalDoseUnit1);
         assertEquals("ml",initialDoseUnit1);
@@ -144,6 +148,12 @@ public class MedicationRequestBuilderTest {
 
         assertEquals("Capsule", finalDoseUnit8);
         assertEquals("Unit(s)",initialDoseUnit8);
+
+        assertEquals("Tablet", finalDoseUnit9);
+        assertEquals("Tablet",initialDoseUnit9);
+
+        assertEquals("Capsule", finalDoseUnit10);
+        assertEquals("Capsule",initialDoseUnit10);
 
     }
 

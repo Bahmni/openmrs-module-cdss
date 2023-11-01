@@ -354,6 +354,95 @@
           } ]
         } ]
       }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "proposal",
+        "subject": {
+          "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+        },
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "1232",
+              "display": "Atorvastatin 90 mg"
+            }
+          ],
+          "text": "Atorvastatin 90 mg"
+        },
+        "dosageInstruction": [ {
+          "text": "{\"instructions\":\"As directed\"}",
+          "timing": {
+            "event": [ "2023-09-06T07:29:05+00:00" ],
+            "repeat": {
+
+            },
+            "code": {
+              "coding": [ {
+                "code": "9d83d5f2-3f10-11e4-adec-0800271c1b75",
+                "display": "Twice a week"
+              } ],
+              "text": "Twice a week"
+            }
+          },
+          "asNeededBoolean": false,
+          "doseAndRate": [ {
+            "doseQuantity": {
+              "value": 55.0,
+              "unit": "Tablet",
+              "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
+            }
+          } ]
+        } ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "proposal",
+        "subject": {
+          "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+        },
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://dummyhost/dummysystemcode",
+              "code": "1232",
+              "display": "Atorvastatin 100 mg"
+            }
+          ],
+          "text": "Atorvastatin 100 mg"
+        },
+        "dosageInstruction": [ {
+          "text": "{\"instructions\":\"As directed\"}",
+          "timing": {
+            "event": [ "2023-09-06T07:29:05+00:00" ],
+            "repeat": {
+
+            },
+            "code": {
+              "coding": [ {
+                "code": "9d83d5f2-3f10-11e4-adec-0800271c1b75",
+                "display": "Twice a week"
+              } ],
+              "text": "Twice a week"
+            }
+          },
+          "asNeededBoolean": false,
+          "doseAndRate": [ {
+            "doseQuantity": {
+              "value": 55.0,
+              "unit": "Capsule",
+              "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
+            }
+          } ]
+        } ]
+      }
     }
+
   ]
 }

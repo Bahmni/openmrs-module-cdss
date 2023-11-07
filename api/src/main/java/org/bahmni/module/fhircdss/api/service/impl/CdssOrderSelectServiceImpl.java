@@ -84,9 +84,6 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
         if (responseEntityMap.getStatusCode().is2xxSuccessful()) {
             Map<String, List<CDSAlert>> alerts = responseEntityMap.getBody();
             return Optional.of(alerts.get("cards")).orElseThrow(CdssException::new);
-        } else if (responseEntityMap.getStatusCode().is4xxClientError()) {
-            logger.error("Call to CDS server failed with response status code = " + responseEntityMap.getStatusCode().value());
-            throw new ResponseStatusException(HttpStatus.PRECONDITION_FAILED, responseEntityMap.getStatusCode().getReasonPhrase(), null);
         } else {
                 logger.error("Call to CDS server failed with response status code = " + responseEntityMap.getStatusCode().value());
                 throw new CdssException();

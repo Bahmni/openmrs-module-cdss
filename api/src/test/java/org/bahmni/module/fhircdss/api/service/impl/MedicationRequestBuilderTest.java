@@ -227,7 +227,7 @@ public class MedicationRequestBuilderTest {
         Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_missing_units.json");
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
         thrown.expect(DrugDosageException.class);
-        thrown.expectMessage("Missing Dose units in the configuration for the medicine Atorvastatin 20 mg");
+        thrown.expectMessage("Prescribed dosage could not be validated for Atorvastatin 20 mg. Reason: Dose unit unknown to CDSS.");
         medicationRequestBuilder.build(mockRequestBundle);
     }
 

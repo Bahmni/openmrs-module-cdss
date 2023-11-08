@@ -145,7 +145,7 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         Quantity doseQuantity = dosageDoseAndRateComponent.getDoseQuantity();
         String doseUnit = UnitMapper.factorOfConversion(doseQuantity.getUnit());
         if(doseUnit == null) {
-            throw new DrugDosageException(String.format("Missing Dose units in the configuration for the medicine %s", medicationLabel));
+            throw new DrugDosageException(String.format("Prescribed dosage could not be validated for %s. Reason: Dose unit unknown to CDSS.", medicationLabel));
         }
         doseQuantity.setUnit(doseUnit);
     }

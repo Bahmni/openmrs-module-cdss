@@ -1,5 +1,6 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
+import org.bahmni.module.fhircdss.api.exception.DrugDosageException;
 import org.bahmni.module.fhircdss.api.service.RequestBuilder;
 import org.bahmni.module.fhircdss.api.util.CdssUtils;
 import org.bahmni.module.fhircdss.api.util.Frequency;
@@ -119,28 +120,33 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
 
     private void resolveFhirDosage(MedicationRequest medicationRequest) {
         Dosage dosage = medicationRequest.getDosageInstruction().get(0);
-        resolveFhirDoseQuantityUnit(dosage);
+        String medicationLabel = medicationRequest.getMedicationCodeableConcept().getCoding().get(0).getDisplay();
+        resolveFhirDoseQuantityUnit(dosage, medicationLabel);
         Frequency frequency = getFrequencyFromDosage(dosage);
         resolveFhirDosageFrequency(dosage, frequency);
 
     }
 
-    private  Frequency getFrequencyFromDosage(Dosage dosage) {
+    private Frequency getFrequencyFromDosage(Dosage dosage) {
         CodeableConcept codeableConcept = dosage.getTiming().getCode();
         String frequencyStr = codeableConcept.getText();
         Frequency frequencyObject = Frequency.valueOfFrequency(frequencyStr);
         return frequencyObject;
     }
 
-    private  void resolveFhirDosageFrequency(Dosage dosage, Frequency frequency) {
+    private void resolveFhirDosageFrequency(Dosage dosage, Frequency frequency) {
         dosage.getTiming().getRepeat().setFrequency(frequency.getFrequencyCount());
         dosage.getTiming().getRepeat().setPeriod(frequency.getPeriodCount());
         dosage.getTiming().getRepeat().setPeriodUnit(Timing.UnitsOfTime.fromCode(frequency.getPeriodUnit()));
     }
 
-    private void resolveFhirDoseQuantityUnit(Dosage dosage) {
+    private void resolveFhirDoseQuantityUnit(Dosage dosage, String medicationLabel) {
         Dosage.DosageDoseAndRateComponent dosageDoseAndRateComponent = dosage.getDoseAndRate().get(0);
-        Quantity doseQuantity =  dosageDoseAndRateComponent.getDoseQuantity();
-        doseQuantity.setUnit(UnitMapper.factorOfConversion(doseQuantity.getUnit()));
+        Quantity doseQuantity = dosageDoseAndRateComponent.getDoseQuantity();
+        String doseUnit = UnitMapper.factorOfConversion(doseQuantity.getUnit());
+        if(doseUnit == null) {
+            throw new DrugDosageException(String.format("Missing Dose units in the configuration for the medicine %s", medicationLabel));
+        }
+        doseQuantity.setUnit(doseUnit);
     }
 }

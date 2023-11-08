@@ -1,6 +1,7 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
 import ca.uhn.fhir.context.FhirContext;
+import org.bahmni.module.fhircdss.api.exception.DrugDosageException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -9,7 +10,9 @@ import org.hl7.fhir.r4.model.MedicationRequest;
 import org.hl7.fhir.r4.model.Quantity;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.hl7.fhir.r4.model.Timing;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -58,6 +61,9 @@ public class MedicationRequestBuilderTest {
 
     @Mock
     private FhirMedicationRequestService fhirMedicationRequestService;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void shouldIncludeActiveMedications_whenPatientHasOneActiveMedication_oneDraftMedication() throws Exception {
@@ -215,6 +221,14 @@ public class MedicationRequestBuilderTest {
         assertEquals("d", repeat5.getPeriodUnit().toCode());
         assertEquals("Immediately",frequencyText5);
 
+    }
+    @Test
+    public void shouldThrowDrugDosageException_whenDosageUnitsNotPresentInUnitMapper() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_missing_units.json");
+        when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        thrown.expect(DrugDosageException.class);
+        thrown.expectMessage("Missing Dose units in the configuration for the medicine Atorvastatin 20 mg");
+        medicationRequestBuilder.build(mockRequestBundle);
     }
 
     private static String getDoseUnitFromBundleEntry(Bundle.BundleEntryComponent bundleEntryComponent) {

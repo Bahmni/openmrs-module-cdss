@@ -1,5 +1,6 @@
 package org.bahmni.module.fhircdss.api.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.bahmni.module.fhircdss.api.model.alert.CDSAlert;
 import org.hl7.fhir.r4.model.Bundle;
 import org.openmrs.annotation.Authorized;
@@ -12,5 +13,5 @@ public interface CdssOrderSelectService {
     String CODING_SYSTEM_FOR_OPENMRS_CONCEPT = "https://fhir.openmrs.org";
 
     @Authorized("Execute CDSS")
-    List<CDSAlert> validateInteractions(String serviceName, Bundle bundle);
+    List<CDSAlert> validateInteractions(String serviceName, Bundle bundle) throws JsonProcessingException;
 }

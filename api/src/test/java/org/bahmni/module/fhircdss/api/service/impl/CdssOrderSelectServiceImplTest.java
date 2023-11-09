@@ -4,13 +4,16 @@ import ca.uhn.fhir.context.FhirContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
+import org.bahmni.module.fhircdss.api.exception.DrugDosageException;
 import org.bahmni.module.fhircdss.api.model.alert.CDSAlert;
 import org.bahmni.module.fhircdss.api.validator.BundleRequestValidator;
 import org.bahmni.module.fhircdss.api.validator.CdsServiceValidator;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Patient;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -25,6 +28,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
@@ -40,10 +44,10 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.refEq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.refEq;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Context.class, LocaleUtility.class})
@@ -78,6 +82,9 @@ public class CdssOrderSelectServiceImplTest {
     @Mock
     private UserContext userContext;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Before
     public void setUp() {
         PowerMockito.mockStatic(Context.class);
@@ -102,6 +109,34 @@ public class CdssOrderSelectServiceImplTest {
         verify(medicationRequestBuilder, times(1)).build(mockRequestBundle);
         assertEquals(1, cdsAlerts.size());
     }
+    @Test
+    public void shouldThrowException_whenCdssServiceThrowErrorResponseStatusExceptionWith4xx() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle();
+        doNothing().when(bundleRequestValidator).validate(mockRequestBundle);
+        doNothing().when(cdsServiceValidator).validate(anyString());
+        when(patientRequestBuilder.build(mockRequestBundle)).thenReturn(new Patient());
+        when(conditionsRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
+        when(medicationRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
+        when(restTemplate.postForEntity(anyString(), any(), refEq(java.util.Map.class))).thenThrow(new HttpClientErrorException(HttpStatus.PRECONDITION_FAILED, " dummy status", getMockHttpClientErrorExceptionWith4xx().getBytes(), null));
+        thrown.expect(DrugDosageException.class);
+        thrown.expectMessage("dummy dosage exception");
+        cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle);
+
+    }
+    @Test
+    public void shouldThrowException_whenCdssServiceThrowErrorResponseStatusExceptionOtherThanWith4xx() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle();
+        doNothing().when(bundleRequestValidator).validate(mockRequestBundle);
+        doNothing().when(cdsServiceValidator).validate(anyString());
+        when(patientRequestBuilder.build(mockRequestBundle)).thenReturn(new Patient());
+        when(conditionsRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
+        when(medicationRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
+        when(restTemplate.postForEntity(anyString(), any(), refEq(java.util.Map.class))).thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "dummy status", getMockHttpClientErrorExceptionWith5xx().getBytes(), null));
+        thrown.expect(CdssException.class);
+        thrown.expectMessage("dummy dosage exception");
+        cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle);
+
+    }
 
     private Bundle getMockRequestBundle() throws Exception {
         Path path = Paths.get(getClass().getClassLoader()
@@ -122,5 +157,23 @@ public class CdssOrderSelectServiceImplTest {
         }
         ResponseEntity<Map> responseEntityMap = new ResponseEntity<>(alerts, HttpStatus.OK);
         return responseEntityMap;
+    }
+    private String getMockHttpClientErrorExceptionWith4xx() {
+        return "{\n" +
+                "  \"timestamp\" : \"2023-11-07T11:31:11.847+00:00\",\n" +
+                "  \"status\" : 412,\n" +
+                "  \"error\" : \"Precondition Failed\",\n" +
+                "  \"message\" : \"dummy dosage exception\",\n" +
+                "  \"path\" : \"/cds-services/medication-order-select\"\n" +
+                "}";
+    }
+    private String getMockHttpClientErrorExceptionWith5xx() {
+        return "{\n" +
+                "  \"timestamp\" : \"2023-11-07T11:31:11.847+00:00\",\n" +
+                "  \"status\" : 500,\n" +
+                "  \"error\" : \"Precondition Failed\",\n" +
+                "  \"message\" : \"dummy dosage exception\",\n" +
+                "  \"path\" : \"/cds-services/medication-order-select\"\n" +
+                "}";
     }
 }

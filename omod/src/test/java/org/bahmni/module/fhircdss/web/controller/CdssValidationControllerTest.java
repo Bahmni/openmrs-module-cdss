@@ -2,6 +2,7 @@ package org.bahmni.module.fhircdss.web.controller;
 
 import ca.uhn.fhir.context.FhirContext;
 import org.bahmni.module.fhircdss.api.exception.CdssException;
+import org.bahmni.module.fhircdss.api.exception.DrugDosageException;
 import org.bahmni.module.fhircdss.api.model.alert.CDSAlert;
 import org.bahmni.module.fhircdss.api.model.alert.CDSIndicator;
 import org.bahmni.module.fhircdss.api.model.alert.CDSSource;
@@ -14,6 +15,9 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.openmrs.module.webservices.rest.SimpleObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -44,7 +48,7 @@ public class CdssValidationControllerTest {
         Bundle mockRequestBundle = getMockBundle("request_bundle.json");
         when(cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle)).thenReturn(getMockAlert());
 
-        List<CDSAlert> alerts = cdssValidationController.validate("medication-order-select", mockRequestBundle);
+        List<CDSAlert> alerts = (List<CDSAlert>) cdssValidationController.validate("medication-order-select", mockRequestBundle).getBody();
 
         assertNotNull(alerts);
         assertEquals(1, alerts.size());
@@ -61,6 +65,17 @@ public class CdssValidationControllerTest {
         thrown.expectMessage("CDSS Host URL in empty");
 
         cdssValidationController.validate("medication-order-select", mockRequestBundle);
+    }
+
+    @Test
+    public void shouldThrowResponseEntityWithBadRequest_whenCdssServiceThrowMissMatchedException() throws Exception {
+        Bundle mockRequestBundle = getMockBundle("request_bundle.json");
+        when(cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle)).thenThrow(new DrugDosageException("dummy dosage exception"));
+
+
+        ResponseEntity<?> responseEntity = cdssValidationController.validate("medication-order-select", mockRequestBundle);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals("dummy dosage exception", ((SimpleObject)responseEntity.getBody()).get("error") );
     }
 
     private Bundle getMockBundle(String fileName) throws Exception {

@@ -1,9 +1,11 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
 import org.apache.log4j.Logger;
+import org.aspectj.apache.bcel.classfile.Code;
 import org.bahmni.module.fhircdss.api.service.RequestBuilder;
 import org.bahmni.module.fhircdss.api.util.CdssUtils;
 import org.bahmni.module.fhircdss.api.util.Frequency;
+import org.bahmni.module.fhircdss.api.util.RouteMapper;
 import org.bahmni.module.fhircdss.api.util.UnitMapper;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -123,8 +125,8 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
 
     private void resolveFhirDosage(MedicationRequest medicationRequest) {
         Dosage dosage = medicationRequest.getDosageInstruction().get(0);
-        String medicationLabel = medicationRequest.getMedicationCodeableConcept().getCoding().get(0).getDisplay();
-        resolveFhirDoseQuantityUnit(dosage, medicationLabel);
+        resolveFhirDoseQuantityUnit(dosage);
+        resolveFhirDoseRoute(dosage);
         Frequency frequency = getFrequencyFromDosage(dosage);
         resolveFhirDosageFrequency(dosage, frequency);
 
@@ -143,7 +145,7 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         dosage.getTiming().getRepeat().setPeriodUnit(Timing.UnitsOfTime.fromCode(frequency.getPeriodUnit()));
     }
 
-    private void resolveFhirDoseQuantityUnit(Dosage dosage, String medicationLabel) {
+    private void resolveFhirDoseQuantityUnit(Dosage dosage) {
         Dosage.DosageDoseAndRateComponent dosageDoseAndRateComponent = dosage.getDoseAndRate().get(0);
         Quantity doseQuantity = dosageDoseAndRateComponent.getDoseQuantity();
         String doseUnit = UnitMapper.factorOfConversion(doseQuantity.getUnit());
@@ -152,5 +154,18 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
             return;
         }
         doseQuantity.setUnit(doseUnit);
+    }
+
+    private void resolveFhirDoseRoute(Dosage dosage) {
+        CodeableConcept dosageRoute = dosage.getRoute();
+        Coding coding = dosageRoute.getCoding().get(0);
+        String route = RouteMapper.factorOfConversion(coding.getDisplay());
+        if(route == null) {
+            coding.setDisplay("NA");
+            dosageRoute.setText("NA");
+            return;
+        }
+        coding.setDisplay(route);
+        dosageRoute.setText(route);
     }
 }

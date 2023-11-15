@@ -24,6 +24,7 @@ import org.openmrs.Drug;
 import org.openmrs.DrugOrder;
 import org.openmrs.DrugReferenceMap;
 import org.openmrs.Order;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
@@ -37,6 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -61,6 +63,9 @@ public class MedicationRequestBuilderTest {
 
     @Mock
     private FhirMedicationRequestService fhirMedicationRequestService;
+
+    @Mock
+    private AdministrationService administrationService;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -257,6 +262,7 @@ public class MedicationRequestBuilderTest {
         drugOrder.setDrug(drug);
         drugOrder.setDose(1.0);
         drugOrder.setDoseUnits(getMockConcept("ml", "ml", false));
+        drugOrder.setRoute(getMockConcept("Oral", "PO", false));
         return Collections.singletonList(drugOrder);
     }
 
@@ -288,6 +294,7 @@ public class MedicationRequestBuilderTest {
         Timing timing = new Timing();
         timing.setCode(getMockCodeableConcept(frequencyText, "dummySystem", "dummyCode"));
         dosage.setTiming(timing);
+        dosage.setRoute(getMockCodeableConcept("Oral", "dummySystem", "dummyCode"));
         medicationRequest.setDosageInstruction((Collections.singletonList(dosage)));
     }
 

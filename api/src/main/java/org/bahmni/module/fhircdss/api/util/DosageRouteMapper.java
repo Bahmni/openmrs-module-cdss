@@ -3,7 +3,7 @@ package org.bahmni.module.fhircdss.api.util;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum RouteMapper {
+public enum DosageRouteMapper {
     INTRAMUSCULAR_PARENTERAL( "Intramuscular" , "P" ),
     NASAL_NASAL("Nasal" , "N" ),
     TOPICAL_INSTILL ("Topical", "Instill"),
@@ -22,7 +22,7 @@ public enum RouteMapper {
     private static final Map<String, String> BY_UNIT = new HashMap<>();
 
     static {
-        for (RouteMapper e : values()) {
+        for (DosageRouteMapper e : values()) {
             BY_UNIT.put(e.inputRoute, e.getTargetRoute());
         }
     }
@@ -30,12 +30,12 @@ public enum RouteMapper {
     public final String inputRoute;
     public final String targetRoute;
 
-    private RouteMapper(String inputRoute, String targetRoute) {
+    private DosageRouteMapper(String inputRoute, String targetRoute) {
         this.inputRoute = inputRoute;
         this.targetRoute = targetRoute;
     }
 
-    public static String factorOfConversion(String inputRoute) {
+    public static String getTargetRoute(String inputRoute) {
         return BY_UNIT.get(inputRoute);
     }
 

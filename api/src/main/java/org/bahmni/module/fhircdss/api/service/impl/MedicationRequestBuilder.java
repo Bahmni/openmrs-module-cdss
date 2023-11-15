@@ -1,6 +1,6 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
-import org.bahmni.module.fhircdss.api.exception.DrugDosageException;
+import org.apache.log4j.Logger;
 import org.bahmni.module.fhircdss.api.service.RequestBuilder;
 import org.bahmni.module.fhircdss.api.util.CdssUtils;
 import org.bahmni.module.fhircdss.api.util.Frequency;
@@ -35,6 +35,8 @@ import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CODI
 
 @Component
 public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
+    private static Logger logger = Logger.getLogger(MedicationRequestBuilder.class);
+
 
     private static final String DRUG_ORDER = "Drug order";
 
@@ -109,6 +111,7 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         resolveFhirDosage(medicationRequest);
         bundleEntryComponent.setResource(medicationRequest);
         medicationBundle.addEntry(bundleEntryComponent);
+
     }
 
     private List<Order> getActiveOrders(String patientUuid) {
@@ -145,7 +148,8 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         Quantity doseQuantity = dosageDoseAndRateComponent.getDoseQuantity();
         String doseUnit = UnitMapper.factorOfConversion(doseQuantity.getUnit());
         if(doseUnit == null) {
-            throw new DrugDosageException(String.format("Prescribed dosage could not be validated for %s. Reason: Dose unit unknown to CDSS.", medicationLabel));
+            doseQuantity.setUnit("NA");
+            return;
         }
         doseQuantity.setUnit(doseUnit);
     }

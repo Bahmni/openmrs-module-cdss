@@ -223,12 +223,16 @@ public class MedicationRequestBuilderTest {
 
     }
     @Test
-    public void shouldThrowDrugDosageException_whenDosageUnitsNotPresentInUnitMapper() throws Exception {
+    public void shouldReplaceDoseUnitWithNA_whenDosageUnitsNotPresentInUnitMapper() throws Exception {
         Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_missing_units.json");
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
-        thrown.expect(DrugDosageException.class);
-        thrown.expectMessage("Prescribed dosage could not be validated for Atorvastatin 20 mg. Reason: Dose unit unknown to CDSS.");
-        medicationRequestBuilder.build(mockRequestBundle);
+        String initialDoseUnit = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(0));
+        Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
+        List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        assertEquals(1, resultMedicationEntries.size());
+        String finalDoseUnit = getDoseUnitFromBundleEntry(resultMedicationEntries.get(0));
+        assertEquals("dummy", initialDoseUnit);
+        assertEquals("NA", finalDoseUnit);
     }
 
     private static String getDoseUnitFromBundleEntry(Bundle.BundleEntryComponent bundleEntryComponent) {

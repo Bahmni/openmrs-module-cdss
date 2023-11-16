@@ -279,7 +279,7 @@ public class MedicationRequestBuilderTest {
 
     }
     @Test
-    public void shouldReplaceDoseUnitAndRouteOfAdministrationWithNA_whenDosageUnitsNotPresentInDosageUnitMapperAndRouteOfAdministrationNotPresentInDosageRouteMapper() throws Exception {
+    public void shouldReplaceWithNA_whenDosageUnitsAndRouteOfAdministrationNotPresent() throws Exception {
         Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_missing_dose_units_and_dose_route.json");
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
         String initialDoseUnit = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(0));

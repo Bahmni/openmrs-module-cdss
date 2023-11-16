@@ -43,7 +43,17 @@
               "unit": "ml",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Intramuscular"
+              }
+            ],
+            "text": "Intramuscular"
+          }
+
         } ]
       }
     },
@@ -87,7 +97,17 @@
               "unit": "Tablet(s)",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Nasal"
+              }
+            ],
+            "text": "Nasal"
+          }
+
         } ]
       }
     },
@@ -131,7 +151,17 @@
               "unit": "Capsule(s)",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Topical"
+              }
+            ],
+            "text": "Topical"
+          }
+
         } ]
       }
     },
@@ -175,7 +205,17 @@
               "unit": "Puff(s)",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Intraosseous"
+              }
+            ],
+            "text": "Intraosseous"
+          }
+
         } ]
       }
     },
@@ -219,7 +259,17 @@
               "unit": "Drop",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Intrathecal"
+              }
+            ],
+            "text": "Intrathecal"
+          }
+
         } ]
       }
     },
@@ -263,7 +313,17 @@
               "unit": "Tablespoon",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Sub Lingual"
+              }
+            ],
+            "text": "Sub Lingual"
+          }
+
         } ]
       }
     },
@@ -307,7 +367,16 @@
               "unit": "Teaspoon",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Rectum"
+              }
+            ],
+            "text": "Rectum"
+          }
         } ]
       }
     },
@@ -351,8 +420,17 @@
               "unit": "Unit(s)",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
-        } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Per Vaginal"
+              }
+            ],
+            "text": "Per Vaginal"
+          }
+        }]
       }
     },
     {
@@ -395,7 +473,16 @@
               "unit": "Tablet",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Oral"
+              }
+            ],
+            "text": "Oral"
+          }
         } ]
       }
     },
@@ -437,10 +524,19 @@
             "doseQuantity": {
               "value": 55.0,
               "unit": "Capsule",
-              "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
+              "code": "9d65f54b-3f1,0-11e4-adec-0800271c1b75"
             }
-          } ]
-        } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "Inhalation"
+              }
+            ],
+            "text": "Inhalation"
+          }
+        }]
       }
     }
 

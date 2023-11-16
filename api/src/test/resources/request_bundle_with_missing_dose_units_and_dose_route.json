@@ -43,8 +43,17 @@
               "unit": "dummy",
               "code": "9d65f54b-3f10-11e4-adec-0800271c1b75"
             }
-          } ]
-        } ]
+          } ],
+          "route": {
+            "coding": [
+              {
+                "code": "",
+                "display": "DummyRoute"
+              }
+            ],
+            "text": "dummyRoute"
+          }
+        }]
       }
     }
   ]

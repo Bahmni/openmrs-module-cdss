@@ -3,7 +3,7 @@ package org.bahmni.module.fhircdss.api.util;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum UnitMapper {
+public enum DosageUnitMapper {
 
     L_L("l", "L"),
     ML_ML("ml", "mL"),
@@ -22,7 +22,7 @@ public enum UnitMapper {
     private static final Map<String, String> BY_UNIT = new HashMap<>();
 
     static {
-        for (UnitMapper e : values()) {
+        for (DosageUnitMapper e : values()) {
             BY_UNIT.put(e.inputUnit, e.getTargetUnit());
         }
     }
@@ -30,12 +30,12 @@ public enum UnitMapper {
     public final String inputUnit;
     public final String targetUnit;
 
-    private UnitMapper(String inputUnit, String targetUnit) {
+    private DosageUnitMapper(String inputUnit, String targetUnit) {
         this.inputUnit = inputUnit;
         this.targetUnit = targetUnit;
     }
 
-    public static String factorOfConversion(String sourceUnit) {
+    public static String getTargetUnit(String sourceUnit) {
         return BY_UNIT.get(sourceUnit);
     }
 

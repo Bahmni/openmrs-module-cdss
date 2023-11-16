@@ -1,7 +1,6 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
 import ca.uhn.fhir.context.FhirContext;
-import org.bahmni.module.fhircdss.api.exception.DrugDosageException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -24,6 +23,7 @@ import org.openmrs.Drug;
 import org.openmrs.DrugOrder;
 import org.openmrs.DrugReferenceMap;
 import org.openmrs.Order;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
@@ -62,6 +62,9 @@ public class MedicationRequestBuilderTest {
     @Mock
     private FhirMedicationRequestService fhirMedicationRequestService;
 
+    @Mock
+    private AdministrationService administrationService;
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -98,8 +101,8 @@ public class MedicationRequestBuilderTest {
         assertEquals(inputMedicationEntries.size(), medicationEntries.size());
     }
     @Test
-    public void shouldResolveToStandardFhirDoseUnit_whenValidMedicationsWithDoseUnitInputPassed() throws Exception {
-        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_multiple_dose_units.json");
+    public void shouldResolveToStandardFhirDoseUnitAndRoute_whenValidMedicationsWithDoseUnitAndRouteInputPassed() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_multiple_dose_units_and_dose_route.json");
         String initialDoseUnit1 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(0));
         String initialDoseUnit2 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(1));
         String initialDoseUnit3 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(2));
@@ -110,6 +113,17 @@ public class MedicationRequestBuilderTest {
         String initialDoseUnit8 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(7));
         String initialDoseUnit9 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(8));
         String initialDoseUnit10 = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(9));
+
+        String initialRoute1 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(0));
+        String initialRoute2 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(1));
+        String initialRoute3 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(2));
+        String initialRoute4 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(3));
+        String initialRoute5 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(4));
+        String initialRoute6 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(5));
+        String initialRoute7 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(6));
+        String initialRoute8 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(7));
+        String initialRoute9 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(8));
+        String initialRoute10 = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(9));
 
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
         Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
@@ -130,6 +144,17 @@ public class MedicationRequestBuilderTest {
         String finalDoseUnit8 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(7));
         String finalDoseUnit9 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(8));
         String finalDoseUnit10 = getDoseUnitFromBundleEntry(resultMedicationEntries.get(9));
+
+        String finalRoute1 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(0));
+        String finalRoute2 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(1));
+        String finalRoute3 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(2));
+        String finalRoute4 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(3));
+        String finalRoute5 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(4));
+        String finalRoute6 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(5));
+        String finalRoute7 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(6));
+        String finalRoute8 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(7));
+        String finalRoute9 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(8));
+        String finalRoute10 = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(9));
 
         assertEquals("mL", finalDoseUnit1);
         assertEquals("ml",initialDoseUnit1);
@@ -161,6 +186,37 @@ public class MedicationRequestBuilderTest {
         assertEquals("Capsule", finalDoseUnit10);
         assertEquals("Capsule",initialDoseUnit10);
 
+        // route check
+
+        assertEquals("P", finalRoute1);
+        assertEquals("Intramuscular",initialRoute1);
+
+        assertEquals("N", finalRoute2);
+        assertEquals("Nasal",initialRoute2);
+
+        assertEquals("Instill", finalRoute3);
+        assertEquals("Topical",initialRoute3);
+
+        assertEquals("P", finalRoute4);
+        assertEquals("Intraosseous",initialRoute4);
+
+        assertEquals("P", finalRoute5);
+        assertEquals("Intrathecal",initialRoute5);
+
+        assertEquals("SL", finalRoute6);
+        assertEquals("Sub Lingual",initialRoute6);
+
+        assertEquals("R", finalRoute7);
+        assertEquals("Rectum",initialRoute7);
+
+        assertEquals("V", finalRoute8);
+        assertEquals("Per Vaginal",initialRoute8);
+
+        assertEquals("O", finalRoute9);
+        assertEquals("Oral",initialRoute9);
+
+        assertEquals("Inhal", finalRoute10);
+        assertEquals("Inhalation",initialRoute10);
     }
 
     @Test
@@ -223,16 +279,27 @@ public class MedicationRequestBuilderTest {
 
     }
     @Test
-    public void shouldThrowDrugDosageException_whenDosageUnitsNotPresentInUnitMapper() throws Exception {
-        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_missing_units.json");
+    public void shouldReplaceWithNA_whenDosageUnitsAndRouteOfAdministrationNotPresent() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_missing_dose_units_and_dose_route.json");
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
-        thrown.expect(DrugDosageException.class);
-        thrown.expectMessage("Prescribed dosage could not be validated for Atorvastatin 20 mg. Reason: Dose unit unknown to CDSS.");
-        medicationRequestBuilder.build(mockRequestBundle);
+        String initialDoseUnit = getDoseUnitFromBundleEntry(mockRequestBundle.getEntry().get(0));
+        String initialRoute = getRouteOfAdministrationFromBundleEntry(mockRequestBundle.getEntry().get(0));
+        Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
+        List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        assertEquals(1, resultMedicationEntries.size());
+        String finalDoseUnit = getDoseUnitFromBundleEntry(resultMedicationEntries.get(0));
+        String finalRoute = getRouteOfAdministrationFromBundleEntry(resultMedicationEntries.get(0));
+        assertEquals("dummy", initialDoseUnit);
+        assertEquals("NA", finalDoseUnit);
+        assertEquals("dummyRoute", initialRoute);
+        assertEquals("NA", finalRoute);
     }
 
     private static String getDoseUnitFromBundleEntry(Bundle.BundleEntryComponent bundleEntryComponent) {
         return ((MedicationRequest) bundleEntryComponent.getResource()).getDosageInstruction().get(0).getDoseAndRate().get(0).getDoseQuantity().getUnit();
+    }
+    private static String getRouteOfAdministrationFromBundleEntry(Bundle.BundleEntryComponent bundleEntryComponent) {
+        return ((MedicationRequest) bundleEntryComponent.getResource()).getDosageInstruction().get(0).getRoute().getText();
     }
     private static Timing getFrequencyTimingFromBundleEntry(Bundle.BundleEntryComponent bundleEntryComponent) {
         return ((MedicationRequest) bundleEntryComponent.getResource()).getDosageInstruction().get(0).getTiming();
@@ -253,6 +320,7 @@ public class MedicationRequestBuilderTest {
         drugOrder.setDrug(drug);
         drugOrder.setDose(1.0);
         drugOrder.setDoseUnits(getMockConcept("ml", "ml", false));
+        drugOrder.setRoute(getMockConcept("Oral", "PO", false));
         return Collections.singletonList(drugOrder);
     }
 
@@ -284,6 +352,7 @@ public class MedicationRequestBuilderTest {
         Timing timing = new Timing();
         timing.setCode(getMockCodeableConcept(frequencyText, "dummySystem", "dummyCode"));
         dosage.setTiming(timing);
+        dosage.setRoute(getMockCodeableConcept("Oral", "dummySystem", "dummyCode"));
         medicationRequest.setDosageInstruction((Collections.singletonList(dosage)));
     }
 

@@ -1,10 +1,11 @@
 package org.bahmni.module.fhircdss.api.service.impl;
 
-import org.bahmni.module.fhircdss.api.exception.DrugDosageException;
+import org.apache.log4j.Logger;
 import org.bahmni.module.fhircdss.api.service.RequestBuilder;
 import org.bahmni.module.fhircdss.api.util.CdssUtils;
 import org.bahmni.module.fhircdss.api.util.Frequency;
-import org.bahmni.module.fhircdss.api.util.UnitMapper;
+import org.bahmni.module.fhircdss.api.util.DosageRouteMapper;
+import org.bahmni.module.fhircdss.api.util.DosageUnitMapper;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -35,6 +36,8 @@ import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CODI
 
 @Component
 public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
+    private static Logger logger = Logger.getLogger(MedicationRequestBuilder.class);
+
 
     private static final String DRUG_ORDER = "Drug order";
 
@@ -109,6 +112,7 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         resolveFhirDosage(medicationRequest);
         bundleEntryComponent.setResource(medicationRequest);
         medicationBundle.addEntry(bundleEntryComponent);
+
     }
 
     private List<Order> getActiveOrders(String patientUuid) {
@@ -120,11 +124,10 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
 
     private void resolveFhirDosage(MedicationRequest medicationRequest) {
         Dosage dosage = medicationRequest.getDosageInstruction().get(0);
-        String medicationLabel = medicationRequest.getMedicationCodeableConcept().getCoding().get(0).getDisplay();
-        resolveFhirDoseQuantityUnit(dosage, medicationLabel);
+        resolveDoseUnit(dosage);
+        resolveDoseRoute(dosage);
         Frequency frequency = getFrequencyFromDosage(dosage);
         resolveFhirDosageFrequency(dosage, frequency);
-
     }
 
     private Frequency getFrequencyFromDosage(Dosage dosage) {
@@ -140,13 +143,27 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         dosage.getTiming().getRepeat().setPeriodUnit(Timing.UnitsOfTime.fromCode(frequency.getPeriodUnit()));
     }
 
-    private void resolveFhirDoseQuantityUnit(Dosage dosage, String medicationLabel) {
+    private void resolveDoseUnit(Dosage dosage) {
         Dosage.DosageDoseAndRateComponent dosageDoseAndRateComponent = dosage.getDoseAndRate().get(0);
         Quantity doseQuantity = dosageDoseAndRateComponent.getDoseQuantity();
-        String doseUnit = UnitMapper.factorOfConversion(doseQuantity.getUnit());
+        String doseUnit = DosageUnitMapper.getTargetUnit(doseQuantity.getUnit());
         if(doseUnit == null) {
-            throw new DrugDosageException(String.format("Prescribed dosage could not be validated for %s. Reason: Dose unit unknown to CDSS.", medicationLabel));
+            doseQuantity.setUnit("NA");
+            return;
         }
         doseQuantity.setUnit(doseUnit);
+    }
+
+    private void resolveDoseRoute(Dosage dosage) {
+        CodeableConcept dosageRoute = dosage.getRoute();
+        Coding coding = dosageRoute.getCoding().get(0);
+        String route = DosageRouteMapper.getTargetRoute(coding.getDisplay());
+        if(route == null) {
+            coding.setDisplay("NA");
+            dosageRoute.setText("NA");
+            return;
+        }
+        coding.setDisplay(route);
+        dosageRoute.setText(route);
     }
 }

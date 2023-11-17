@@ -22,10 +22,10 @@ paths:
   /cdss:
     post:
       tags:
-        - Drug Diagnosis Interaction
-      summary: Drug Diagnosis Interaction
-      description: Drug Diagnosis Interaction based on termninology codes
-      operationId: drugDiagnosisInteraction
+        - Cdss Interaction
+      summary: Cdss Interaction
+      description: Cdss Interaction based on termninology codes
+      operationId: CdssInteraction
       security:
         - basicAuth: [ ]
       parameters:
@@ -41,7 +41,7 @@ paths:
               - medication-order-select
               - drug-drug-validation
       requestBody:
-        description: drug diagnosis interaction
+        description: cdss interaction
         content:
           application/json:
             schema:
@@ -53,7 +53,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Alerts'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Alerts'
         '400':
           description: Invalid Bundle Provided
         '404':
@@ -103,17 +105,7 @@ components:
                       coding:
                         type: array
                         items:
-                          type: object
-                          properties:
-                            system:
-                              type: string
-                              example: http://dummySystem.info/code
-                            code:
-                              type: string
-                              example: 123456
-                            display:
-                              type: string
-                              example: Acetazolamide 250 mg
+                          $ref: '#/components/schemas/CdsCoding'
                       text:
                         type: string
                         example: Acetazolamide 250 mg
@@ -126,6 +118,9 @@ components:
         indicator:
           type: string
           example: critical
+        alertType:
+          type: string
+          example: Contraindication
         summary:
           type: string
           example: Contraindication - Acetazolamide 250 mg and Acetazolamide 250 mg with patient condition Hyperchloremic acidosis.
@@ -141,9 +136,39 @@ components:
             url:
               type: string
               example: https://en.wikipedia.org/wiki/Acetazolamide#Contraindications
+        referenceMedications:
+          type: array
+          items:
+            $ref: '#/components/schemas/CdssReference'
+        referenceConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CdssReference'
+
+    CdssReference:
+      type: object
+      properties:
+        coding:
+          type: array
+          items:
+            $ref: '#/components/schemas/CdsCoding'
+
+    CdsCoding:
+      type: object
+      properties:
+        system:
+          type: string
+          example: http://dummySystem.info/code
+        code:
+          type: string
+          example: 123456
+        display:
+          type: string
+          example: Acetazolamide 250 mg
+
   securitySchemes:
     basicAuth:
       type: http
       scheme: basic
 security:
-  - basicAuth: []
+  - basicAuth: [ ]

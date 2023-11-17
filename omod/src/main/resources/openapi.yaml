@@ -46,6 +46,178 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Bundle'
+            examples:
+              BundleRequest:
+                value: |-
+                  {
+                    "resourceType": "Bundle",
+                    "type": "collection",
+                    "entry": [
+                      {
+                        "resource": {
+                          "resourceType": "Condition",
+                          "clinicalStatus": {
+                            "coding": [
+                              {
+                                "code": "active",
+                                "display": "active",
+                                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                              }
+                            ]
+                          },
+                          "code": {
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "43339004",
+                                "display": "Hypokalemia"
+                              }
+                            ],
+                            "text": "Hypokalemia"
+                          },
+                          "subject": {
+                            "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+                          }
+                        }
+                      },
+                      {
+                        "resource": {
+                          "resourceType": "MedicationRequest",
+                          "status": "active",
+                          "intent": "order",
+                          "subject": {
+                            "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+                          },
+                          "medicationCodeableConcept": {
+                            "id": "b46cd9ee-b203-47e8-8d77-224688846b07",
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "330601002",
+                                "display": "Acetazolamide 250 mg oral tablet"
+                              },
+                              {
+                                "code": "b46cd9ee-b203-47e8-8d77-224688846b07",
+                                "system": "https://fhir.openmrs.org",
+                                "display": "Acetazolamide 250 mg oral tablet"
+                              }
+                            ],
+                            "text": "Acetazolamide 250 mg oral tablet (Tablet)"
+                          },
+                          "dosageInstruction": [
+                            {
+                              "text": "{\"instructions\":\"As directed\"}",
+                              "timing": {
+                                "event": [
+                                  "2023-11-17T08:04:49.395Z"
+                                ],
+                                "repeat": {
+                                  "duration": 1,
+                                  "durationUnit": "d"
+                                },
+                                "code": {
+                                  "coding": [
+                                    {
+                                      "code": "b46cd9ee-b203-47e8-8d77-224688846b07",
+                                      "display": "Once a day"
+                                    }
+                                  ],
+                                  "text": "Once a day"
+                                }
+                              },
+                              "asNeededBoolean": false,
+                              "doseAndRate": [
+                                {
+                                  "doseQuantity": {
+                                    "value": 111,
+                                    "unit": "Drop",
+                                    "code": "b46cd9ee-b203-47e8-8d77-224688846b07"
+                                  }
+                                }
+                              ],
+                              "route": {
+                                "coding": [
+                                  {
+                                    "code": "",
+                                    "display": "Intraosseous"
+                                  }
+                                ],
+                                "text": "Intraosseous"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "resource": {
+                          "resourceType": "MedicationRequest",
+                          "status": "active",
+                          "intent": "order",
+                          "subject": {
+                            "reference": "Patient/dc9444c6-ad55-4200-b6e9-407e025eb948"
+                          },
+                          "medicationCodeableConcept": {
+                            "id": "8d22e426-039a-41d0-8282-0caea6e07d2c",
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "330061001",
+                                "display": "Allopurinol 100 mg oral tablet"
+                              },
+                              {
+                                "code": "8d22e426-039a-41d0-8282-0caea6e07d2c",
+                                "system": "https://fhir.openmrs.org",
+                                "display": "Allopurinol 100 mg oral tablet"
+                              }
+                            ],
+                            "text": "Allopurinol 100 mg oral tablet (Tablet)"
+                          },
+                          "dosageInstruction": [
+                            {
+                              "text": "{\"instructions\":\"As directed\"}",
+                              "timing": {
+                                "event": [
+                                  "2023-11-17T08:05:04.770Z"
+                                ],
+                                "repeat": {
+                                  "duration": 1,
+                                  "durationUnit": "d"
+                                },
+                                "code": {
+                                  "coding": [
+                                    {
+                                      "code": "8d22e426-039a-41d0-8282-0caea6e07d2c",
+                                      "display": "Once a day"
+                                    }
+                                  ],
+                                  "text": "Once a day"
+                                }
+                              },
+                              "asNeededBoolean": false,
+                              "doseAndRate": [
+                                {
+                                  "doseQuantity": {
+                                    "value": 112,
+                                    "unit": "Tablet(s)",
+                                    "code": "8d22e426-039a-41d0-8282-0caea6e07d2c"
+                                  }
+                                }
+                              ],
+                              "route": {
+                                "coding": [
+                                  {
+                                    "code": "",
+                                    "display": "Oral"
+                                  }
+                                ],
+                                "text": "Oral"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
         required: true
       responses:
         '200':
@@ -56,6 +228,143 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Alerts'
+              examples:
+                Cdss Alerts:
+                  value: |-
+                    [
+                      {
+                        "uuid": "207f034a-fa64-49a0-a167-152e0546be03",
+                        "indicator": "warning",
+                        "summary": "Contraindication: \"Acetazolamide 250 mg oral tablet\" with patient condition \"Hypokalemia\".",
+                        "detail": "The use of Acetazolamide is contraindicated when the patient has Hypokalemia.",
+                        "source": {
+                          "label": "Wikipedia",
+                          "url": "https://en.wikipedia.org/wiki/Acetazolamide#Contraindications"
+                        },
+                        "referenceMedications": [
+                          {
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "330601002",
+                                "display": "Acetazolamide 250 mg oral tablet"
+                              },
+                              {
+                                "system": "https://fhir.openmrs.org",
+                                "code": "b46cd9ee-b203-47e8-8d77-224688846b07",
+                                "display": "Acetazolamide 250 mg oral tablet"
+                              }
+                            ]
+                          }
+                        ],
+                        "referenceConditions": [
+                          {
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "43339004",
+                                "display": "Hypokalemia"
+                              }
+                            ]
+                          }
+                        ],
+                        "alertType": "Contraindication"
+                      },
+                      {
+                        "uuid": "c8070883-5ffd-4b46-9771-069c33594f66",
+                        "indicator": "warning",
+                        "summary": "Contraindication of drug-drug interaction: \"Acetazolamide 250 mg oral tablet\" with \"Allopurinol 100 mg oral tablet\".",
+                        "detail": "The use of Acetazolamide is contraindicated with Allopurinol. Acetazolamide may increase the excretion rate of Allopurinol which could result in a lower serum level and potentially a reduction in efficacy.",
+                        "source": {
+                          "label": "Drug Bank",
+                          "url": "https://go.drugbank.com/drugs/DB00819#drug-interactions"
+                        },
+                        "referenceMedications": [
+                          {
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "330601002",
+                                "display": "Acetazolamide 250 mg oral tablet"
+                              },
+                              {
+                                "system": "https://fhir.openmrs.org",
+                                "code": "b46cd9ee-b203-47e8-8d77-224688846b07",
+                                "display": "Acetazolamide 250 mg oral tablet"
+                              }
+                            ]
+                          },
+                          {
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "330061001",
+                                "display": "Allopurinol 100 mg oral tablet"
+                              },
+                              {
+                                "system": "https://fhir.openmrs.org",
+                                "code": "8d22e426-039a-41d0-8282-0caea6e07d2c",
+                                "display": "Allopurinol 100 mg oral tablet"
+                              }
+                            ]
+                          }
+                        ],
+                        "alertType": "Contraindication"
+                      },
+                      {
+                        "uuid": "afbb3e55-e3c7-3eaa-bfc2-91d1c5946912",
+                        "indicator": "warning",
+                        "summary": "One or more dose Inputs are invalid for  Acetazolamide 250 mg oral tablet",
+                        "detail": "\n- Expected O (oral) for dose route",
+                        "source": {
+                          "label": "DummyService"
+                        },
+                        "referenceMedications": [
+                          {
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "330601002",
+                                "display": "Acetazolamide 250 mg oral tablet"
+                              },
+                              {
+                                "system": "https://fhir.openmrs.org",
+                                "code": "b46cd9ee-b203-47e8-8d77-224688846b07",
+                                "display": "Acetazolamide 250 mg oral tablet"
+                              }
+                            ]
+                          }
+                        ],
+                        "alertType": "Validation Error"
+                      },
+                      {
+                        "uuid": "2e4c0448-3a0d-3d9c-8c3a-fe4d5356ae28",
+                        "indicator": "warning",
+                        "summary": "The amount of Allopurinol prescribed is 28 times the average daily dose.",
+                        "detail": "Substance : Allopurinol\n\nPresent in this patient’s medication :\n- Allopurinol 100 mg oral tablet\n\nRoute of administration :\n- Oral\n  - Prescribed daily dose : 11.20g\n  - Recommended average daily dose : 0.4g\n  - Prescribed amount is 28 times over the average daily dose\n\nConclusion : Combined prescribed amount is 28.00 times the average daily dose.",
+                        "source": {
+                          "label": "WHO ATC DDD",
+                          "url": "https://www.whocc.no/atc_ddd_index/?code=M04AA01"
+                        },
+                        "referenceMedications": [
+                          {
+                            "coding": [
+                              {
+                                "system": "http://snomed.info/sct",
+                                "code": "330061001",
+                                "display": "Allopurinol 100 mg oral tablet"
+                              },
+                              {
+                                "system": "https://fhir.openmrs.org",
+                                "code": "8d22e426-039a-41d0-8282-0caea6e07d2c",
+                                "display": "Allopurinol 100 mg oral tablet"
+                              }
+                            ]
+                          }
+                        ],
+                        "alertType": "High Dosage"
+                      }
+                    ]
         '400':
           description: Invalid Bundle Provided
         '404':
@@ -123,10 +432,14 @@ components:
           example: Contraindication
         summary:
           type: string
-          example: Contraindication - Acetazolamide 250 mg and Acetazolamide 250 mg with patient condition Hyperchloremic acidosis.
+          example: >-
+            Contraindication - Acetazolamide 250 mg and Acetazolamide 250 mg
+            with patient condition Hyperchloremic acidosis.
         detail:
           type: string
-          example: The use of Acetazolamide is contraindicated when the patient has Hyperchloremic acidosis.
+          example: >-
+            The use of Acetazolamide is contraindicated when the patient has
+            Hyperchloremic acidosis.
         source:
           type: object
           properties:
@@ -144,7 +457,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CdssReference'
-
     CdssReference:
       type: object
       properties:
@@ -152,7 +464,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CdsCoding'
-
     CdsCoding:
       type: object
       properties:
@@ -165,7 +476,6 @@ components:
         display:
           type: string
           example: Acetazolamide 250 mg
-
   securitySchemes:
     basicAuth:
       type: http

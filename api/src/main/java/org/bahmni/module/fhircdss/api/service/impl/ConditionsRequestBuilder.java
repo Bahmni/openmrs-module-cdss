@@ -23,6 +23,7 @@ import org.openmrs.api.ObsService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.api.FhirConditionService;
+import org.openmrs.module.fhir2.api.search.param.ConditionSearchParams;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -111,10 +112,11 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
         referenceParam.setValue(patientUuid);
         referenceAndListParam.addValue(new ReferenceOrListParam().add(referenceParam));
 
-        IBundleProvider iBundleProvider = fhirConditionService.searchConditions(referenceAndListParam, null,
-                null, null, null,
+        ConditionSearchParams conditionSearchParams = new ConditionSearchParams(referenceAndListParam, null,
                 null, null, null, null,
-                null);
+                null, null, null, null);
+
+        IBundleProvider iBundleProvider = fhirConditionService.searchConditions(conditionSearchParams);
 
         for (IBaseResource conditionBaseResource : iBundleProvider.getAllResources()) {
             Condition fhirCondition = parser.parseResource(Condition.class, parser.encodeResourceToString(conditionBaseResource));

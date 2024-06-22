@@ -104,7 +104,7 @@ public class ConditionsRequestBuilderTest {
         List<Obs> visitDiagnosesObs = getVisitDiagnosesObs(false);
 
         when(patientService.getPatientByUuid(anyString())).thenReturn(patient);
-        when(fhirConditionService.searchConditions(any(), any(), any(), any(), any(), any(), any(), any(), any(),any())).thenReturn(iBundleProvider);
+        when(fhirConditionService.searchConditions(any())).thenReturn(iBundleProvider);
         when(obsService.getObservationsByPersonAndConcept(any(), any())).thenReturn(visitDiagnosesObs);
         when(conceptTranslator.toFhirResource(any())).thenReturn(getCodeableConcept());
 
@@ -134,7 +134,7 @@ public class ConditionsRequestBuilderTest {
         IBundleProvider iBundleProvider = new SimpleBundleProvider(Arrays.asList(activeConditionResource, inactiveConditionResource));
 
         when(patientService.getPatientByUuid(anyString())).thenReturn(patient);
-        when(fhirConditionService.searchConditions(any(), any(), any(), any(), any(), any(), any(), any(), any(),any())).thenReturn(iBundleProvider);
+        when(fhirConditionService.searchConditions(any())).thenReturn(iBundleProvider);
         when(obsService.getObservationsByPersonAndConcept(any(), any())).thenReturn(Collections.EMPTY_LIST);
         when(conceptService.getConceptByUuid("74827482-4ff0-0305-1990-000000000001")).thenReturn(getMockConcept());
 
@@ -154,7 +154,7 @@ public class ConditionsRequestBuilderTest {
         List<Obs> visitDiagnosesObs = getInactiveVisitDiagnosesObs();
 
         when(patientService.getPatientByUuid(anyString())).thenReturn(patient);
-        when(fhirConditionService.searchConditions(any(), any(), any(), any(), any(), any(), any(), any(), any(),any())).thenReturn(iBundleProvider);
+        when(fhirConditionService.searchConditions(any())).thenReturn(iBundleProvider);
         when(obsService.getObservationsByPersonAndConcept(any(), any())).thenReturn(visitDiagnosesObs);
 
         Bundle conditionBundle = conditionsRequestBuilder.build(mockRequestBundle);
@@ -172,7 +172,7 @@ public class ConditionsRequestBuilderTest {
         List<Obs> visitDiagnosesObs = getVisitDiagnosesObs(true);
 
         when(patientService.getPatientByUuid(anyString())).thenReturn(patient);
-        when(fhirConditionService.searchConditions(any(), any(), any(), any(), any(), any(), any(), any(), any(),any())).thenReturn(iBundleProvider);
+        when(fhirConditionService.searchConditions(any())).thenReturn(iBundleProvider);
         when(obsService.getObservationsByPersonAndConcept(any(), any())).thenReturn(visitDiagnosesObs);
         when(conceptTranslator.toFhirResource(any())).thenReturn(getCodeableConcept());
 

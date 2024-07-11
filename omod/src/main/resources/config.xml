@@ -31,7 +31,7 @@
 
 	<globalProperty>
 		<property>cdss.fhir.baseurl</property>
-		<defaultValue>http://localhost</defaultValue>
+		<defaultValue>http://cdss:8080/cds-services</defaultValue>
 		<description>Base URL of the CDSS server</description>
 	</globalProperty>
 

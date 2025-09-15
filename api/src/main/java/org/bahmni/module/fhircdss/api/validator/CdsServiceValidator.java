@@ -7,6 +7,7 @@ import org.bahmni.module.fhircdss.api.exception.CdssException;
 import org.bahmni.module.fhircdss.api.model.cdsservice.CDSServices;
 import org.openmrs.api.context.Context;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,7 +21,7 @@ public class CdsServiceValidator {
     private final Log log = LogFactory.getLog(this.getClass());
 
     @Autowired
-    public CdsServiceValidator(RestTemplate restTemplate) {
+    public CdsServiceValidator(@Qualifier("cdssRestTemplate") RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 

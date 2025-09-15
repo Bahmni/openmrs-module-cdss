@@ -16,6 +16,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -46,6 +47,7 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     private MedicationRequestBuilder medicationRequestBuilder;
 
     @Autowired
+    @Qualifier("cdssRestTemplate")
     private RestTemplate restTemplate;
 
     @Override

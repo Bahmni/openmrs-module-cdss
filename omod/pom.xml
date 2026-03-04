@@ -11,6 +11,13 @@
     <packaging>jar</packaging>
     <name>FHIR CDSS integration OMOD</name>
     <description>OpenMRS module for Fhir CDSS Integration</description>
+    
+    <licenses>
+        <license>
+            <name>Mozilla Public License Version 2.0</name>
+            <url>https://www.bahmni.org/license/mplv2hd</url>
+        </license>
+    </licenses>
     <dependencies>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>

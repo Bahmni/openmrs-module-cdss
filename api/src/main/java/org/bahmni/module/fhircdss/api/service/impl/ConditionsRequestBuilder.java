@@ -5,6 +5,7 @@ import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
 import ca.uhn.fhir.rest.param.ReferenceOrListParam;
 import ca.uhn.fhir.rest.param.ReferenceParam;
+import lombok.extern.slf4j.Slf4j;
 import org.bahmni.module.fhircdss.api.service.RequestBuilder;
 import org.bahmni.module.fhircdss.api.util.CdssUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -27,6 +28,9 @@ import org.openmrs.module.fhir2.api.search.param.ConditionSearchParams;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ca.uhn.fhir.rest.param.TokenAndListParam;
+import ca.uhn.fhir.rest.param.TokenOrListParam;
+import ca.uhn.fhir.rest.param.TokenParam;
 
 import java.util.Date;
 import java.util.List;
@@ -36,6 +40,7 @@ import java.util.stream.Collectors;
 
 import static org.bahmni.module.fhircdss.api.service.CdssOrderSelectService.CODING_SYSTEM_FOR_OPENMRS_CONCEPT;
 
+@Slf4j
 @Component
 public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
 
@@ -112,10 +117,15 @@ public class ConditionsRequestBuilder implements RequestBuilder<Bundle> {
         referenceParam.setValue(patientUuid);
         referenceAndListParam.addValue(new ReferenceOrListParam().add(referenceParam));
 
-        ConditionSearchParams conditionSearchParams = new ConditionSearchParams(referenceAndListParam, null,
+        TokenAndListParam categoryParam = new TokenAndListParam();
+        categoryParam.addValue(new TokenOrListParam().add(new TokenParam("problem-list-item")));
+
+        ConditionSearchParams conditionSearchParams = new ConditionSearchParams(
+                referenceAndListParam, categoryParam,
                 null, null, null, null,
                 null, null, null, null);
 
+        log.info("reached here {}", conditionSearchParams);
         IBundleProvider iBundleProvider = fhirConditionService.searchConditions(conditionSearchParams);
 
         for (IBaseResource conditionBaseResource : iBundleProvider.getAllResources()) {

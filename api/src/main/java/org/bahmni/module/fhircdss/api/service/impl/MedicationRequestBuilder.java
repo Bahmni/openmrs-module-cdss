@@ -3,7 +3,7 @@ package org.bahmni.module.fhircdss.api.service.impl;
 import org.apache.log4j.Logger;
 import org.bahmni.module.fhircdss.api.service.RequestBuilder;
 import org.bahmni.module.fhircdss.api.util.CdssUtils;
-import org.bahmni.module.fhircdss.api.util.Frequency;
+import org.bahmni.module.fhircdss.api.util.OrderFrequencyValue;
 import org.bahmni.module.fhircdss.api.util.DosageRouteMapper;
 import org.bahmni.module.fhircdss.api.util.DosageUnitMapper;
 import org.hl7.fhir.r4.model.Bundle;
@@ -49,12 +49,15 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
 
     private FhirMedicationRequestService fhirMedicationRequestService;
 
+    private OrderFrequencyResolver orderFrequencyResolver;
+
     @Autowired
-    public MedicationRequestBuilder(PatientService patientService, OrderService orderService, FhirConceptSourceService fhirConceptSourceService, FhirMedicationRequestService fhirMedicationRequestService) {
+    public MedicationRequestBuilder(PatientService patientService, OrderService orderService, FhirConceptSourceService fhirConceptSourceService, FhirMedicationRequestService fhirMedicationRequestService, OrderFrequencyResolver orderFrequencyResolver) {
         this.patientService = patientService;
         this.orderService = orderService;
         this.fhirConceptSourceService = fhirConceptSourceService;
         this.fhirMedicationRequestService = fhirMedicationRequestService;
+        this.orderFrequencyResolver = orderFrequencyResolver;
     }
 
     @Override
@@ -126,21 +129,27 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         Dosage dosage = medicationRequest.getDosageInstruction().get(0);
         resolveDoseUnit(dosage);
         resolveDoseRoute(dosage);
-        Frequency frequency = getFrequencyFromDosage(dosage);
-        resolveFhirDosageFrequency(dosage, frequency);
+        resolveFhirDosageFrequency(dosage);
     }
 
-    private Frequency getFrequencyFromDosage(Dosage dosage) {
-        CodeableConcept codeableConcept = dosage.getTiming().getCode();
-        String frequencyStr = codeableConcept.getText();
-        Frequency frequencyObject = Frequency.valueOfFrequency(frequencyStr);
-        return frequencyObject;
-    }
-
-    private void resolveFhirDosageFrequency(Dosage dosage, Frequency frequency) {
+    private void resolveFhirDosageFrequency(Dosage dosage) {
+        String frequencyText = getFrequencyTextFromDosage(dosage);
+        OrderFrequencyValue frequency = orderFrequencyResolver.resolve(frequencyText);
+        if (frequency == null) {
+            logger.warn("Unknown frequency '" + frequencyText + "' - defaulting to once a day");
+            frequency = OrderFrequencyValue.onceADay();
+        }
         dosage.getTiming().getRepeat().setFrequency(frequency.getFrequencyCount());
         dosage.getTiming().getRepeat().setPeriod(frequency.getPeriodCount());
         dosage.getTiming().getRepeat().setPeriodUnit(Timing.UnitsOfTime.fromCode(frequency.getPeriodUnit()));
+    }
+
+    private String getFrequencyTextFromDosage(Dosage dosage) {
+        if (dosage == null || dosage.getTiming() == null || dosage.getTiming().getCode() == null
+                || dosage.getTiming().getCode().getText() == null) {
+            return null;
+        }
+        return dosage.getTiming().getCode().getText();
     }
 
     private void resolveDoseUnit(Dosage dosage) {

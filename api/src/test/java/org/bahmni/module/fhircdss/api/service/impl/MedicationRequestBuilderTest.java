@@ -306,6 +306,32 @@ public class MedicationRequestBuilderTest {
         assertEquals(1, frequencyTiming.getRepeat().getFrequency());
     }
     @Test
+    public void shouldNotThrowException_whenDosageTimingRepeatElementIsMissing() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_multiple_frequency_text.json");
+        MedicationRequest draftMedicationRequest = (MedicationRequest) mockRequestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).findFirst().get().getResource();
+        draftMedicationRequest.getDosageInstruction().get(0).getTiming().setRepeat(null);
+
+        when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+
+        Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
+
+        List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        assertEquals(5, resultMedicationEntries.size());
+    }
+    @Test
+    public void shouldNotThrowException_whenDosageTimingElementIsMissing() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_multiple_frequency_text.json");
+        MedicationRequest draftMedicationRequest = (MedicationRequest) mockRequestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).findFirst().get().getResource();
+        draftMedicationRequest.getDosageInstruction().get(0).setTiming(null);
+
+        when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+
+        Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
+
+        List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        assertEquals(5, resultMedicationEntries.size());
+    }
+    @Test
     public void shouldReplaceWithNA_whenDosageUnitsAndRouteOfAdministrationNotPresent() throws Exception {
         Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_missing_dose_units_and_dose_route.json");
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());

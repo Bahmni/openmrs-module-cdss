@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.bahmni.module.fhircdss.api.util.OrderFrequencyValue;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
 import org.openmrs.ConceptReferenceTerm;
@@ -35,11 +36,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -64,6 +67,9 @@ public class MedicationRequestBuilderTest {
 
     @Mock
     private AdministrationService administrationService;
+
+    @Mock
+    private OrderFrequencyResolver orderFrequencyResolver;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -229,6 +235,11 @@ public class MedicationRequestBuilderTest {
         String frequencyText5 = getFrequencyTextFromBundleEntry(mockRequestBundle.getEntry().get(4));
 
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        when(orderFrequencyResolver.resolve("Twice a day")).thenReturn(new OrderFrequencyValue(2, 1, "d"));
+        when(orderFrequencyResolver.resolve("Every 3 hours")).thenReturn(new OrderFrequencyValue(1, 3, "h"));
+        when(orderFrequencyResolver.resolve("Twice a week")).thenReturn(new OrderFrequencyValue(2, 1, "wk"));
+        when(orderFrequencyResolver.resolve("Once a month")).thenReturn(new OrderFrequencyValue(1, 1, "mo"));
+        when(orderFrequencyResolver.resolve("Immediately")).thenReturn(new OrderFrequencyValue(1, 1, "d"));
         Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
 
         List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
@@ -279,6 +290,49 @@ public class MedicationRequestBuilderTest {
 
     }
     @Test
+    public void shouldNotThrowExceptionAndLeaveFrequencyUnset_whenFrequencyTextIsUnknown() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_multiple_frequency_text.json");
+        String unknownFrequencyText = getFrequencyTextFromBundleEntry(mockRequestBundle.getEntry().get(0));
+
+        when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        when(orderFrequencyResolver.resolve(unknownFrequencyText)).thenReturn(null);
+
+        Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
+
+        List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        assertEquals(5, resultMedicationEntries.size());
+
+        // Unknown frequency should leave timing.repeat untouched instead of throwing an NPE
+        Timing.TimingRepeatComponent repeat = getFrequencyTimingFromBundleEntry(resultMedicationEntries.get(0)).getRepeat();
+        assertTrue(repeat.isEmpty());
+    }
+    @Test
+    public void shouldNotThrowException_whenDosageTimingRepeatElementIsMissing() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_multiple_frequency_text.json");
+        MedicationRequest draftMedicationRequest = (MedicationRequest) mockRequestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).findFirst().get().getResource();
+        draftMedicationRequest.getDosageInstruction().get(0).getTiming().setRepeat(null);
+
+        when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+
+        Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
+
+        List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        assertEquals(5, resultMedicationEntries.size());
+    }
+    @Test
+    public void shouldNotThrowException_whenDosageTimingElementIsMissing() throws Exception {
+        Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_multiple_frequency_text.json");
+        MedicationRequest draftMedicationRequest = (MedicationRequest) mockRequestBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).findFirst().get().getResource();
+        draftMedicationRequest.getDosageInstruction().get(0).setTiming(null);
+
+        when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+
+        Bundle medicationBundle = medicationRequestBuilder.build(mockRequestBundle);
+
+        List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
+        assertEquals(5, resultMedicationEntries.size());
+    }
+    @Test
     public void shouldReplaceWithNA_whenDosageUnitsAndRouteOfAdministrationNotPresent() throws Exception {
         Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_missing_dose_units_and_dose_route.json");
         when(orderService.getActiveOrders(any(), any(), any(), any())).thenReturn(Collections.emptyList());
@@ -309,8 +363,12 @@ public class MedicationRequestBuilderTest {
     }
 
     private List<Order> getDrugOrders() {
+        return Arrays.asList(getDrugOrder("order-uuid"));
+    }
+
+    private Order getDrugOrder(String uuid) {
         DrugOrder drugOrder = new DrugOrder();
-        drugOrder.setUuid("order-uuid");
+        drugOrder.setUuid(uuid);
         Drug drug = new Drug();
         DrugReferenceMap referenceMap = new DrugReferenceMap();
         ConceptReferenceTerm conceptReferenceTerm = new ConceptReferenceTerm();
@@ -321,7 +379,7 @@ public class MedicationRequestBuilderTest {
         drugOrder.setDose(1.0);
         drugOrder.setDoseUnits(getMockConcept("ml", "ml", false));
         drugOrder.setRoute(getMockConcept("Oral", "PO", false));
-        return Collections.singletonList(drugOrder);
+        return drugOrder;
     }
 
     private Bundle getMockRequestBundle(String fileName) throws Exception {
@@ -351,6 +409,7 @@ public class MedicationRequestBuilderTest {
         dosage.addDoseAndRate(dosageDoseAndRateComponent);
         Timing timing = new Timing();
         timing.setCode(getMockCodeableConcept(frequencyText, "dummySystem", "dummyCode"));
+        timing.setRepeat(new Timing.TimingRepeatComponent());
         dosage.setTiming(timing);
         dosage.setRoute(getMockCodeableConcept("Oral", "dummySystem", "dummyCode"));
         medicationRequest.setDosageInstruction((Collections.singletonList(dosage)));

@@ -137,7 +137,7 @@ public class MedicationRequestBuilder implements RequestBuilder<Bundle> {
         OrderFrequencyValue frequency = orderFrequencyResolver.resolve(frequencyText);
         if (frequency == null) {
             logger.warn("Unknown frequency '" + frequencyText + "' - defaulting to once a day");
-            frequency = OrderFrequencyValue.onceADay();
+            return;
         }
         if (dosage == null || dosage.getTiming() == null || dosage.getTiming().getRepeat() == null) {
             logger.warn("Cannot resolve frequency - timing repeat info missing on dosage");

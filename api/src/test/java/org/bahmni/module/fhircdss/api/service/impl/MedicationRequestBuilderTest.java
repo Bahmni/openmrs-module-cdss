@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -289,7 +290,7 @@ public class MedicationRequestBuilderTest {
 
     }
     @Test
-    public void shouldNotThrowException_whenFrequencyTextIsUnknown_mockResolverReturnsNull() throws Exception {
+    public void shouldNotThrowExceptionAndLeaveFrequencyUnset_whenFrequencyTextIsUnknown() throws Exception {
         Bundle mockRequestBundle = getMockRequestBundle("request_bundle_with_multiple_frequency_text.json");
         String unknownFrequencyText = getFrequencyTextFromBundleEntry(mockRequestBundle.getEntry().get(0));
 
@@ -301,9 +302,9 @@ public class MedicationRequestBuilderTest {
         List<Bundle.BundleEntryComponent> resultMedicationEntries = medicationBundle.getEntry().stream().filter(entry -> ResourceType.MedicationRequest.equals(entry.getResource().getResourceType())).collect(Collectors.toList());
         assertEquals(5, resultMedicationEntries.size());
 
-        // Unknown frequency should default to once a day instead of throwing an NPE
-        Timing frequencyTiming = getFrequencyTimingFromBundleEntry(resultMedicationEntries.get(0));
-        assertEquals(1, frequencyTiming.getRepeat().getFrequency());
+        // Unknown frequency should leave timing.repeat untouched instead of throwing an NPE
+        Timing.TimingRepeatComponent repeat = getFrequencyTimingFromBundleEntry(resultMedicationEntries.get(0)).getRepeat();
+        assertTrue(repeat.isEmpty());
     }
     @Test
     public void shouldNotThrowException_whenDosageTimingRepeatElementIsMissing() throws Exception {

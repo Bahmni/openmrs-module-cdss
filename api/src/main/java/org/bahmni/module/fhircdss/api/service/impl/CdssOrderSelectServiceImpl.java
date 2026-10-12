@@ -47,6 +47,9 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
     private MedicationRequestBuilder medicationRequestBuilder;
 
     @Autowired
+    private AllergiesRequestBuilder allergiesRequestBuilder;
+
+    @Autowired
     @Qualifier("cdssRestTemplate")
     private RestTemplate restTemplate;
 
@@ -58,6 +61,7 @@ public class CdssOrderSelectServiceImpl implements CdssOrderSelectService {
         Prefetch prefetch = Prefetch.builder().patient(patientRequestBuilder.build(bundle))
                 .conditions(conditionsRequestBuilder.build(bundle))
                 .draftMedicationRequests(medicationRequestBuilder.build(bundle))
+                .allergies(allergiesRequestBuilder.build(bundle))
                 .build();
         CDSRequest cdsRequest = CDSRequest.builder()
                 .hook(serviceName)

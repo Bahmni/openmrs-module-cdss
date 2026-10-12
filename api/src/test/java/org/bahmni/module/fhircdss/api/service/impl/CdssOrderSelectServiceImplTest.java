@@ -77,6 +77,9 @@ public class CdssOrderSelectServiceImplTest {
     private MedicationRequestBuilder medicationRequestBuilder;
 
     @Mock
+    private AllergiesRequestBuilder allergiesRequestBuilder;
+
+    @Mock
     private RestTemplate restTemplate;
 
     @Mock
@@ -100,6 +103,7 @@ public class CdssOrderSelectServiceImplTest {
         when(patientRequestBuilder.build(mockRequestBundle)).thenReturn(new Patient());
         when(conditionsRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(medicationRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
+        when(allergiesRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(restTemplate.postForEntity(anyString(), any(), refEq(java.util.Map.class))).thenReturn(getResponse());
 
         List<CDSAlert> cdsAlerts = cdssOrderSelectService.validateInteractions("medication-order-select", mockRequestBundle);
@@ -107,6 +111,7 @@ public class CdssOrderSelectServiceImplTest {
         verify(patientRequestBuilder, times(1)).build(mockRequestBundle);
         verify(conditionsRequestBuilder, times(1)).build(mockRequestBundle);
         verify(medicationRequestBuilder, times(1)).build(mockRequestBundle);
+        verify(allergiesRequestBuilder, times(1)).build(mockRequestBundle);
         assertEquals(1, cdsAlerts.size());
     }
     @Test
@@ -117,6 +122,7 @@ public class CdssOrderSelectServiceImplTest {
         when(patientRequestBuilder.build(mockRequestBundle)).thenReturn(new Patient());
         when(conditionsRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(medicationRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
+        when(allergiesRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(restTemplate.postForEntity(anyString(), any(), refEq(java.util.Map.class))).thenThrow(new HttpClientErrorException(HttpStatus.PRECONDITION_FAILED, " dummy status", getMockHttpClientErrorExceptionWith4xx().getBytes(), null));
         thrown.expect(DrugDosageException.class);
         thrown.expectMessage("dummy dosage exception");
@@ -131,6 +137,7 @@ public class CdssOrderSelectServiceImplTest {
         when(patientRequestBuilder.build(mockRequestBundle)).thenReturn(new Patient());
         when(conditionsRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(medicationRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
+        when(allergiesRequestBuilder.build(mockRequestBundle)).thenReturn(new Bundle());
         when(restTemplate.postForEntity(anyString(), any(), refEq(java.util.Map.class))).thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "dummy status", getMockHttpClientErrorExceptionWith5xx().getBytes(), null));
         thrown.expect(CdssException.class);
         thrown.expectMessage("dummy dosage exception");

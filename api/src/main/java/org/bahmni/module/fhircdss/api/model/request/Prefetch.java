@@ -23,4 +23,7 @@ public class Prefetch implements Serializable {
     @JsonSerialize(using = FhirResourceSerializer.class)
     private Bundle draftMedicationRequests;
 
+    @JsonSerialize(using = FhirResourceSerializer.class)
+    private Bundle allergies;
+
 }
